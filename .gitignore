@@ -17,4 +17,6 @@
 *.wx32fsl
 *.lisp~
 *.lisp#
-#
+*.64ofasl
+*.lib
+*.fas
