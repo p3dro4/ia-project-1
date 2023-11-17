@@ -39,6 +39,12 @@
     )
 )
 
+;; Função que recebe um tabuleiro e retorna um tabuleiro preenchido com '.'.
+(defun tabuleiro-jogadas-vazio (numero-linhas tamanho-linha)
+  "Tabuleiro vazio"
+  (tabuleiro-aleatorio (loop for n from 0 below (* tamanho-linha numero-linhas) collect ".") tamanho-linha)
+)
+
 ;; Função que recebe um tabuleiro e se não tiver nenhum cavalo colocado,
 ;; coloca um cavalo numa casa da 1ª linha e retorna o tabuleiro com o cavalo colocado.
 (defun colocar-cavalo (tabuleiro)
@@ -281,10 +287,10 @@
 (defun regista-operacao (operador tabuleiro)
   "Regista a operação aplicada ao tabuleiro"
   (cond ((or (null tabuleiro) (not (cavalo-colocado-p tabuleiro))) nil)
-        (t (let ((posicao (posicao-cavalo tabuleiro))
+        (t (let ((origem (posicao-cavalo tabuleiro))
                  (destino (posicao-cavalo (funcall operador tabuleiro))))
              (cond ((null destino) tabuleiro)
-                    (t (regista-movimento destino tabuleiro))
+                    (t (regista-movimento (casas-movimento (- (first destino) (first origem)) (- (second destino) (second origem)) tabuleiro) tabuleiro))
              )
           ))
   )
@@ -292,13 +298,17 @@
 
 ;; Função auxiliar que recebe o destino e o tabuleiro e
 ;; regista o movimento do cavalo no tabuleiro: marcando a origem (o) e o caminho até lá (- ou |).
-(defun regista-movimento (destino tabuleiro)
+(defun regista-movimento (casas tabuleiro &optional (origem (posicao-cavalo tabuleiro)) casa-anterior)
   "Regista o movimento do cavalo no tabuleiro"
-  (let* ((origem (posicao-cavalo tabuleiro))
-         (casas (casas-movimento (- (first destino) (first origem)) (- (second destino) (second origem)) tabuleiro))
-        )
-        ; TODO: Falta escolher o caracter para marcar o caminho
-  )
+  (let ((casa-atual (car casas)))
+    (cond ((null tabuleiro) tabuleiro)
+      ((= (length casas) 1) (substituir (first casa-atual) (second casa-atual) tabuleiro t))
+      ((equal casa-atual origem) (regista-movimento (cdr casas) (substituir (first casa-atual) (second casa-atual) tabuleiro "o") origem))
+      ((= (first casa-atual) (first origem)) (regista-movimento (cdr casas) (substituir (first casa-atual) (second casa-atual) tabuleiro "-") origem))
+      (t (regista-movimento (cdr casas) (substituir (first casa-atual) (second casa-atual) tabuleiro "|") origem))
+    )
+  )    
+  ; TODO: Falta escolher o caracter para marcar o caminho
 )
 
 ;; Fução auxiliar que recebe o movimento a realizar em i e j, i.e (2 -1) e o tabuleiro e
@@ -322,7 +332,7 @@
          (tamanho-linha (length (car tabuleiro)))
          (numero-linhas (length tabuleiro))
          (posicao-cavalo-inicial (posicao-cavalo (tabuleiro-jogado)))
-         (tabuleiro-vazio (tabuleiro-aleatorio (loop for n from 0 below (* tamanho-linha numero-linhas)collect ".") tamanho-linha))
+         (tabuleiro-vazio (tabuleiro-jogadas-vazio numero-linhas tamanho-linha))
          (tabuleiro-jogadas (substituir (first posicao-cavalo-inicial) (second posicao-cavalo-inicial) tabuleiro-vazio t))
         )
     (format t "Tabuleiro aleatorio:~%")
