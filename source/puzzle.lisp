@@ -298,17 +298,18 @@
 
 ;; Função auxiliar que recebe o destino e o tabuleiro e
 ;; regista o movimento do cavalo no tabuleiro: marcando a origem (o) e o caminho até lá (- ou |).
-(defun regista-movimento (casas tabuleiro &optional (origem (posicao-cavalo tabuleiro)) casa-anterior)
+(defun regista-movimento (casas tabuleiro &optional (origem (posicao-cavalo tabuleiro)) casa-anterior )
   "Regista o movimento do cavalo no tabuleiro"
   (let ((casa-atual (car casas)))
     (cond ((null tabuleiro) tabuleiro)
       ((= (length casas) 1) (substituir (first casa-atual) (second casa-atual) tabuleiro t))
       ((equal casa-atual origem) (regista-movimento (cdr casas) (substituir (first casa-atual) (second casa-atual) tabuleiro "o") origem))
-      ((= (first casa-atual) (first origem)) (regista-movimento (cdr casas) (substituir (first casa-atual) (second casa-atual) tabuleiro "-") origem))
-      (t (regista-movimento (cdr casas) (substituir (first casa-atual) (second casa-atual) tabuleiro "|") origem))
+      ((and (not (null casa-anterior)) (equal (celula (first casa-anterior) (second casa-anterior) tabuleiro) "|"))  (regista-movimento (cdr casas) (substituir (first casa-atual) (second casa-atual) tabuleiro "-") origem casa-atual))
+      ((and (not (null casa-anterior)) (equal (celula (first casa-anterior) (second casa-anterior) tabuleiro) "-"))  (regista-movimento (cdr casas) (substituir (first casa-atual) (second casa-atual) tabuleiro "|") origem casa-atual))
+      ((= (first casa-atual) (first origem)) (regista-movimento (cdr casas) (substituir (first casa-atual) (second casa-atual) tabuleiro "-") origem casa-atual))
+      (t (regista-movimento (cdr casas) (substituir (first casa-atual) (second casa-atual) tabuleiro "|") origem casa-atual))
     )
   )    
-  ; TODO: Falta escolher o caracter para marcar o caminho
 )
 
 ;; Fução auxiliar que recebe o movimento a realizar em i e j, i.e (2 -1) e o tabuleiro e
@@ -346,6 +347,6 @@
     (format t "~%Tabuleiro com as jogadas vazio:~%")
     (escreve-tabuleiro tabuleiro-jogadas)
     (format t "~%Tabuleiro com as jogadas apos o movimento do cavalo com (operador-2):~%")
-    (escreve-tabuleiro (regista-operacao 'operador-2 (operador-2 tabuleiro-jogadas)))
+    (escreve-tabuleiro (regista-operacao 'operador-3(regista-operacao 'operador-8(regista-operacao 'operador-2(regista-operacao 'operador-2 (regista-operacao 'operador-2 tabuleiro-jogadas))))))
   )
 )
