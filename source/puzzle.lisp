@@ -55,12 +55,16 @@
 ;; Função que recebe um número positivo i e cria uma lista com todos os números
 ;; entre 0 (inclusivé) e o número passado como argumento (eiclusivé). 
 ;; Por default o i é 100.
+;; teste: (lista-numeros 10)
+;; resultado: (0 1 2 3 4 5 6 7 8 9)
 (defun lista-numeros (&optional (n 100))
   "Retorna uma lista com todos os numeros entre 0 e n"
   (reverse (loop for n from 0 below n collect n))
 )
 
 ;; Função que recebe uma lista e muda aleatoriamente os seus números.
+;; teste: (baralhar '(1 2 3 4 5 6 7 8 9 10))
+;; resultado: "Elementos da lista ordenados aleatoriamente"
 (defun baralhar (lista)
   "Baralha os elementos da lista de forma aleatoria"
     (cond ((null lista) nil)
@@ -72,6 +76,8 @@
 
 ;; Função que recebe uma lista de números (por default gera uma lista nova) 
 ;; e o tamanhho da linha (por default o valor é 10) e retorna um tabuleiro com esses parâmetros.
+;; teste: (tabuleiro-aleatorio)
+;; resutaldo: "Tabuleiro aleatorio com 10 linhas e 10 colunas"
 (defun tabuleiro-aleatorio (&optional (lista (baralhar (lista-numeros))) (i 10))
   "Retorna um tabuleiro aleatorio com os números da lista e com o tamanho da linha i"
   (cond
@@ -85,6 +91,8 @@
 
 ;; Função que recebe um índice e o tabuleiro e 
 ;; retorna uma lista que representa essa linha do tabuleiro.
+;; teste: (linha 0 (tabuleiro-jogado))
+;; resultado: (T 25 54 89 21 8 36 14 41 96)
 (defun linha (i tabuleiro)
   "Retorna a linha i do tabuleiro"
   (nth i tabuleiro)
@@ -92,12 +100,42 @@
 
 ;; Função que recebe dois índices e o tabuleiro e 
 ;; retorna o valor presente nessa célula do tabuleiro.
+;; teste: (celula 0 0 (tabuleiro-jogado))
+;; resultado: T
 (defun celula (i j tabuleiro)
   "Retorna o valor da celula (i,j) do tabuleiro"
   (nth j (nth i tabuleiro))
 )
 
 ;;; Funções auxiliares
+
+;; Função que recebe um número e retorna o número simétrico 
+;; teste: (simetrico 123)
+;; resultado: 321
+(defun simetrico (num)
+  "Retorna o número simétrico"
+  (lista-para-numero (reverse (numero-para-lista num)))
+)
+
+;; Função auxiliar que recebe uma lista de algarismos e retorna o número correspondente.
+;; teste: (lista-para-numero '(1 2 3))
+;; resultado: 123
+(defun lista-para-numero (lista)
+  "Retorna o número correspondente à lista de algarismos"
+  (cond ((null lista) 0)
+        ((not (numberp (car lista))) (error "A lista não é composta por números"))
+        (t (+ (* (car lista) (expt 10 (1- (length lista)))) (lista-para-numero (cdr lista))))
+  )
+)
+
+;; Função auxiliar que recebe um número e retorna uma lista com os algarismos do número.
+(defun numero-para-lista (num)
+  "Retorna uma lista com os algarismos do número"
+  (cond ((not (numberp num)) (error "A lista não é composta por números"))
+        ((< num 10) (list num))
+        (t (append (numero-para-lista (floor (/ num 10))) (list (mod num 10))))
+  )
+)
 
 ;; Função auxiliar que recebe um predicado e uma lista e
 ;; remove da lista os elementos que satisfazem o predicado.
