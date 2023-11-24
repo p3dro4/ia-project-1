@@ -26,7 +26,7 @@
 (defun tabuleiro-jogado ()
   "Tabuleiro de teste igual ao anterior mas tendo sido colocado o cavalo na posição: i=0 e j=0"
   '(
-    (T 25 54 89 21 8 36 14 41 96) 
+    (T 25 54 89 21 8 36 14 41 96)
     (78 47 56 23 5 49 13 12 26 60) 
     (0 27 17 83 34 93 74 52 45 80)
     (69 9 77 95 55 39 91 73 57 30) 
@@ -37,12 +37,6 @@
     (3 61 58 44 65 82 19 4 35 62) 
     (33 70 84 40 66 38 92 67 98 97)
     )
-)
-
-;; Função que recebe um tabuleiro e retorna um tabuleiro preenchido com '.'.
-(defun tabuleiro-jogadas-vazio (numero-linhas tamanho-linha)
-  "Tabuleiro vazio"
-  (tabuleiro-aleatorio (loop for n from 0 below (* tamanho-linha numero-linhas) collect ".") tamanho-linha)
 )
 
 ;; Função que recebe um tabuleiro e se não tiver nenhum cavalo colocado,
@@ -134,22 +128,29 @@
   )
 )
 
+;; Função que recebe o tabuleiro e o valor a procurar e
+;; retorna a posição (i j) em que se encontra o valor. Caso o valor não se encontre no tabuleiro deverá ser retornado NIL.
+(defun posicao-valor (tabuleiro valor &optional (i 0) (j 0))
+  "Retorna a posicao do valor no tabuleiro"
+      (cond ((null tabuleiro) nil)
+            (t (let ((n (length tabuleiro))
+                     (cel (celula i j tabuleiro)))
+                    (cond 
+                      ((>= i n) nil)
+                      ((= j n) (posicao-valor tabuleiro valor (1+ i) 0))
+                      ((< j (length (linha i tabuleiro))) 
+                       (cond ((equal cel valor) (list i j))
+                             (t (posicao-valor tabuleiro valor i (1+ j)))
+                       ))))
+            )
+      )
+)
+
 ;; Função que recebe o tabuleiro e devolve a posição (i j) em que se encontra o
 ;; cavalo. Caso o cavalo não se encontre no tabuleiro deverá ser retornado NIL.
-(defun posicao-cavalo (tabuleiro &optional (i 0) (j 0))
+(defun posicao-cavalo (tabuleiro)
   "Retorna a posicao do cavalo no tabuleiro"
-  (cond ((null tabuleiro) nil)
-          (t (let ((n (length tabuleiro))
-              (cel (celula i j tabuleiro))
-            )
-          (cond 
-            ((>= i n) nil)
-            ((= j n) (posicao-cavalo tabuleiro (1+ i) 0))
-            ((< j (length (linha i tabuleiro))) 
-                (cond ((eq cel t) (list i j))
-                      (t (posicao-cavalo tabuleiro i (1+ j)))
-                ))
-    ))))
+  (posicao-valor tabuleiro t)
 )
 
 ;; Predicado que recebe a posição de destino e o tabuleiro e
@@ -282,52 +283,6 @@
   )
 )
 
-;; Função que recebe um operador e um tabuleiro e altera o tabuleiro de acordo com o operador. 
-;; Retorna o tabuleiro passado como argumento caso o operador não seja válido.
-(defun regista-operacao (operador tabuleiro)
-  "Regista a operação aplicada ao tabuleiro"
-  (cond ((or (null tabuleiro) (not (cavalo-colocado-p tabuleiro))) nil)
-        (t (let ((origem (posicao-cavalo tabuleiro))
-                 (destino (posicao-cavalo (funcall operador tabuleiro))))
-             (cond ((null destino) tabuleiro)
-                    (t (regista-movimento (casas-movimento (- (first destino) (first origem)) (- (second destino) (second origem)) tabuleiro) tabuleiro))
-             )
-          ))
-  )
-)
-
-;; Função auxiliar que recebe o destino e o tabuleiro e
-;; regista o movimento do cavalo no tabuleiro: marcando a origem (o) e o caminho até lá (- ou |).
-(defun regista-movimento (casas tabuleiro &optional (origem (posicao-cavalo tabuleiro)) casa-anterior )
-  "Regista o movimento do cavalo no tabuleiro"
-  (let ((casa-atual (car casas)))
-    (cond ((null tabuleiro) tabuleiro)
-      ((= (length casas) 1) (substituir (first casa-atual) (second casa-atual) tabuleiro t))
-      ((equal casa-atual origem) (regista-movimento (cdr casas) (substituir (first casa-atual) (second casa-atual) tabuleiro "o") origem))
-      ((and (not (null casa-anterior)) (equal (celula (first casa-anterior) (second casa-anterior) tabuleiro) "|"))  (regista-movimento (cdr casas) (substituir (first casa-atual) (second casa-atual) tabuleiro "-") origem casa-atual))
-      ((and (not (null casa-anterior)) (equal (celula (first casa-anterior) (second casa-anterior) tabuleiro) "-"))  (regista-movimento (cdr casas) (substituir (first casa-atual) (second casa-atual) tabuleiro "|") origem casa-atual))
-      ((= (first casa-atual) (first origem)) (regista-movimento (cdr casas) (substituir (first casa-atual) (second casa-atual) tabuleiro "-") origem casa-atual))
-      (t (regista-movimento (cdr casas) (substituir (first casa-atual) (second casa-atual) tabuleiro "|") origem casa-atual))
-    )
-  )    
-)
-
-;; Fução auxiliar que recebe o movimento a realizar em i e j, i.e (2 -1) e o tabuleiro e
-;; retorna uma lista com as casas que constituem o movimento do cavalo.
-(defun casas-movimento (i j tabuleiro &optional (lista-casas (list (posicao-cavalo tabuleiro))))
-  "Retorna uma lista com as casas que constituem o movimento do cavalo"
-  (let* ((posicao (posicao-cavalo tabuleiro))
-         (tabuleiro-origem-nil (substituir (first posicao) (second posicao) tabuleiro nil))
-        )
-    (cond ((> i 0) (casas-movimento (1- i) j (substituir (1+ (first posicao)) (second posicao) tabuleiro-origem-nil t) (append lista-casas (list (list (1+ (first posicao)) (second posicao))))))
-          ((< i 0) (casas-movimento (1+ i) j (substituir (1- (first posicao)) (second posicao) tabuleiro-origem-nil t) (append lista-casas (list (list (1- (first posicao)) (second posicao))))))
-          ((> j 0) (casas-movimento i (1- j) (substituir (first posicao) (1+ (second posicao)) tabuleiro-origem-nil t) (append lista-casas (list (list (first posicao) (1+ (second posicao)))))))
-          ((< j 0) (casas-movimento i (1+ j) (substituir (first posicao) (1- (second posicao)) tabuleiro-origem-nil t) (append lista-casas (list (list (first posicao) (1- (second posicao)))))))
-          (t lista-casas)
-    )
-  )
-)
-
 (defun teste ()
   (let* ((tabuleiro (tabuleiro-aleatorio))
          (tamanho-linha (length (car tabuleiro)))
@@ -344,9 +299,5 @@
     (escreve-tabuleiro (tabuleiro-jogado))
     (format t "~%Tabuleiro de teste apos o movimento do cavalo com (operador-2):~%")
     (escreve-tabuleiro (operador-2 (tabuleiro-jogado)))
-    (format t "~%Tabuleiro com as jogadas vazio:~%")
-    (escreve-tabuleiro tabuleiro-jogadas)
-    (format t "~%Tabuleiro com as jogadas apos o movimento do cavalo com (operador-2):~%")
-    (escreve-tabuleiro (regista-operacao 'operador-3(regista-operacao 'operador-8(regista-operacao 'operador-2(regista-operacao 'operador-2 (regista-operacao 'operador-2 tabuleiro-jogadas))))))
-  )
+    )
 )
