@@ -17,9 +17,6 @@
 *.wx32fsl
 *.lisp~
 *.lisp#
-<<<<<<< HEAD
 *.64ofasl
 *.lib
 *.fas
-=======
->>>>>>> 978c888dd879777c31b664d87b03c78c0d5562dc
