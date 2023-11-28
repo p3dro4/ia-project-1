@@ -41,11 +41,13 @@
 
 ;; Função que recebe um tabuleiro e se não tiver nenhum cavalo colocado,
 ;; coloca um cavalo numa casa da 1ª linha e retorna o tabuleiro com o cavalo colocado.
-(defun colocar-cavalo (tabuleiro)
+(defun colocar-cavalo (tabuleiro &optional (j (random (length (car tabuleiro)))))
   "Coloca o cavalo numa casa da 1ª linha do tabuleiro"
-  (cond ((cavalo-colocado-p tabuleiro) tabuleiro)
+  (cond ((cavalo-colocado-p tabuleiro) nil)
         (t (let ((n (length (car tabuleiro))))
-          (substituir 0 (random n) tabuleiro t)
+          (cond ((null (celula 0 j tabuleiro)) nil)
+                (t (aplicar-regras (substituir 0 j tabuleiro t) (celula 0 j tabuleiro)))
+          )
         ))
   )
 )
@@ -144,13 +146,13 @@
   )
 )
 
+;; Função auxiliar que recebe um tabuleiro e retorna uma lista com todas as linhas do tabuleiro juntas.
 (defun juntar-linhas (tabuleiro)
   "Junta as linhas do tabuleiro numa lista"
   (cond ((null tabuleiro) nil)
         (t (append (car tabuleiro) (juntar-linhas (cdr tabuleiro))))
   )
 )
-
 
 ;; Função auxiliar que recebe uma lista de algarismos e retorna o número correspondente.
 ;; teste: (lista-para-numero '(1 2 3))
@@ -402,17 +404,4 @@
         ((not (= (length posicao) 2)) error "A posição não tem 2 elementos")
         (t (format t "~a~a" (coluna-para-letra (second posicao)) (1+ (first posicao))))	
   ) 
-)
-
-;;; Teste
-
-(defun teste ()
-  (let* ((tabuleiro (tabuleiro-aleatorio))
-         (tamanho-linha (length (car tabuleiro)))
-         (numero-linhas (length tabuleiro))
-         (posicao-cavalo-inicial (posicao-cavalo (tabuleiro-jogado)))
-        )
-    (format t "Caminho do cavalo no tabuleiro de teste:~%")
-    (escreve-caminho (no-caminho (dfs (cria-no (tabuleiro-jogado)) 'solucao-e-p 'sucessores (operadores) 100)))
-  )
 )
