@@ -124,34 +124,6 @@
 
 
 ;; Função que verifica se um nó é solução para o problema B (pontuação >= 60)
-(defun solucao-b-p (no)
-  "Função que verifica se um nó é solução"
-  (>= (no-pontuacao no) 60)
-)
-
-;; Função que verifica se um nó é solução para o problema C (pontuação >= 270)
-(defun solucao-c-p (no)
-  "Função que verifica se um nó é solução"
-  (>= (no-pontuacao no) 270)
-)
-
-;; Função que verifica se um nó é solução para o problema D (pontuação >= 600)
-(defun solucao-d-p (no)
-  "Função que verifica se um nó é solução"
-  (>= (no-pontuacao no) 600)
-)
-
-;; Função que verifica se um nó é solução para o problema E (pontuação >= 300)
-(defun solucao-e-p (no)
-  "Função que verifica se um nó é solução"
-  (>= (no-pontuacao no) 300)
-)
-
-;; Função que verifica se um nó é solução para o problema F (pontuação >= 2000)
-(defun solucao-f-p (no)
-  "Função que verifica se um nó é solução"
-  (>= (no-pontuacao no) 2000)
-)
 
 ;;; Funções auxiliares e de ordenação de nós
 
@@ -193,7 +165,7 @@
           (bfs (car sucessores-no-inicial) objetivop sucessores operadores (cdr sucessores-no-inicial) (append fechados (list no-inicial)))
          )
         )
-        ; Chamada recursiva para a próxima profundidade com o primeiro sucessor
+        ; Caso recursivo: executa a função normalmente, com recurso à função auxiliar
         (t (bfs-loop no-inicial objetivop sucessores operadores abertos fechados))
   )
 )
@@ -226,13 +198,13 @@
 ;; Algoritmo de procura em profundidade
 (defun dfs (no-inicial objetivop sucessores operadores profundidade-max &optional abertos fechados)
   "Implementação do algoritmo de procura em largura. Recebe o nó inicial, o objetivo de pontuação, os nós sucessores, os operadores e como parâmetros opcionais a lista de abertos e fechados. Retorna uma lista com os nós que compõem o caminho, ou NIL."
-        ; Se for a 1ª chamada da função, a profundidade é 0, e coloca-se o cavalo numa posição da 1ª linha
+        ; Caso base: primeira chamada da função; profundidade é zero; o cavalo é colocado na primeira linha
   (cond ((= (no-profundidade no-inicial) 0) 
          (let ((sucessores-no-inicial (sucessores-iniciais no-inicial)))
           (dfs (car sucessores-no-inicial) objetivop sucessores operadores profundidade-max (cdr sucessores-no-inicial) (append fechados (list no-inicial)))
          )
         )
-        ; Se não for executa o funcionamento normal da função
+        ; Caso recursivo: executa a função normalmente, com recurso à função auxiliar
         (t (dfs-loop no-inicial objetivop sucessores operadores profundidade-max abertos fechados))
   )
 )
