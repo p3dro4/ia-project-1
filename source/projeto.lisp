@@ -35,18 +35,26 @@
   )
 )
 
-(defun ler-ficheiro (ficheiro)
-  "Lê o ficheiro de problemas"
+(defun ler-problema (n &optional (ficheiro (problemas-dat)))
+  "Lê o ficheiro de problemas e devolve o problema n"
   (with-open-file (stream ficheiro)
-    (ler-linhas stream)
+    (ler-ficheiro stream n)
   )
 )
 
-(defun ler-linhas (stream)
+(defun ler-ficheiro (stream n)
   "Lê as linhas do ficheiro de problemas"
   (let ((linha (read-line stream nil)))
-    
+    (format t "~a~%" linha)
+    (cond ((equal linha (concatenate 'string "*" (write-to-string n))) (format t "Encontrado"))
+          ((null linha) nil)
+          (t (ler-ficheiro stream n ))
+    )
   )
+)
+
+(defun ler-propriedades-problema ()
+
 )
 
 (inicializar)

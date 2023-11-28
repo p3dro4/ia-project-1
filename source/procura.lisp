@@ -190,28 +190,38 @@
 ;; Algoritmo de procura em largura
 (defun bfs (no-inicial objetivop sucessores operadores &optional abertos fechados)
   "Algoritmo de procura em largura"
-  (let* (
-    (sucessores-gerados (funcall sucessores no-inicial operadores 'bfs))
-    (sucessores-abertos (apply #'append (mapcar (lambda (suc) (
-      cond ((not (or (no-existp suc fechados 'bfs) (null (no-estado suc)))) (list suc))))
-    sucessores-gerados)))
-    (solucao (apply #'append (mapcar (lambda (suc) (
-      cond ((funcall objetivop suc) suc))) sucessores-abertos)))
-    (abertos-novo (abertos-bfs abertos sucessores-abertos))
-    )
-    (cond 
-      ((funcall objetivop no-inicial) no-inicial)
-      ((null abertos-novo) nil)
-      ((not (null solucao)) solucao)
-      (t (bfs 
-            (car abertos-novo)
-            objetivop
-            sucessores
-            operadores
-            (cdr abertos-novo)
-            (append fechados (list no-inicial))
-          ))
-    )
+         ; Se for a 1ª chamada da função, a profundidade é 0, e coloca-se o cavalo numa posição da 1ª linha
+  (cond ((= (no-profundidade no-inicial) 0) 
+         (let ((sucessores-no-inicial (sucessores-iniciais no-inicial)))
+          (bfs (car sucessores-no-inicial) objetivop sucessores operadores (cdr sucessores-no-inicial) (append fechados (list no-inicial)))
+         )
+        )
+        ; Se não for executa o funcionamento normal da função
+        (t (bfs-loop no-inicial objetivop sucessores operadores abertos fechados))
+  )
+)
+
+(defun bfs-loop (no-inicial objetivop sucessores operadores &optional abertos fechados)
+  "Função auxiliar para o algoritmo de procura em largura"
+         ; Lista de nós sucessores gerados pelo nó passado como argumento através dos operadores
+  (let* ((sucessores-gerados (funcall sucessores no-inicial operadores 'bfs))
+         ; Lista de nós sucessores que não existem na lista de nós abertos e fechados
+         (sucessores-abertos (apply #'append (mapcar (lambda (suc) (cond ((not (or (no-existp suc abertos 'dfs) (null (no-estado suc)))) (list suc)))) sucessores-gerados)))
+         ; Lista de nós que são solução
+         (solucao (list (apply #'append (mapcar (lambda (suc) (cond ((funcall objetivop suc) suc))) sucessores-abertos))))
+         ; Lista de nós abertos com os nós sucessores (que não constam na lista de nós abertos e fechados) adicionados
+         (abertos-novo (abertos-dfs abertos sucessores-abertos))
+        )
+          (cond 
+            ; Verifica se o nó inicial é solução, se for retorna-o
+            ((funcall objetivop no-inicial) no-inicial)
+            ; Verifica se a lista de nós abertos é nula, se for retorna NIL
+            ((null abertos-novo) nil)
+            ; Verifica se a lista de nós solução não é nula, se não for retorna o 1º nó da lista
+            ((not (null (car solucao))) (car solucao))
+            ; Aplica recursividade para continuar a procurar
+            (t (bfs-loop (car abertos-novo) objetivop sucessores operadores (cdr abertos-novo) (append fechados (list no-inicial))))
+          )
   )
 )
 
