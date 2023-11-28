@@ -121,10 +121,7 @@
 ;;; Funções auxliares de procura
 
 ;; Função que verifica se um nó é solução para o problema A (pontuação >= 70)
-(defun solucao-a-p (no)
-  "Função que verifica se um nó é solução"
-  (>= (no-pontuacao no) 70)
-)
+
 
 ;; Função que verifica se um nó é solução para o problema B (pontuação >= 60)
 (defun solucao-b-p (no)
@@ -189,27 +186,28 @@
 
 ;; Algoritmo de procura em largura
 (defun bfs (no-inicial objetivop sucessores operadores &optional abertos fechados)
-  "Algoritmo de procura em largura"
-         ; Se for a 1ª chamada da função, a profundidade é 0, e coloca-se o cavalo numa posição da 1ª linha
+  "Implementação do algoritmo de procura em largura. Recebe o nó inicial, o objetivo de pontuação, os nós sucessores, os operadores e como parâmetros opcionais a lista de abertos e fechados. Retorna uma lista com os nós que compõem o caminho, ou NIL."
+        ; Caso base: primeira chamada da função; profundidade é zero; o cavalo é colocado na primeira linha
   (cond ((= (no-profundidade no-inicial) 0) 
          (let ((sucessores-no-inicial (sucessores-iniciais no-inicial)))
           (bfs (car sucessores-no-inicial) objetivop sucessores operadores (cdr sucessores-no-inicial) (append fechados (list no-inicial)))
          )
         )
-        ; Se não for executa o funcionamento normal da função
+        ; Chamada recursiva para a próxima profundidade com o primeiro sucessor
         (t (bfs-loop no-inicial objetivop sucessores operadores abertos fechados))
   )
 )
 
+;; Função auxiliar para a procura em no algoritmo de procura em largura
 (defun bfs-loop (no-inicial objetivop sucessores operadores &optional abertos fechados)
   "Função auxiliar para o algoritmo de procura em largura"
-         ; Lista de nós sucessores gerados pelo nó passado como argumento através dos operadores
+        ; Gera a lista de nós sucessores, gerados pelo nó passado como argumento, através dos operadores
   (let* ((sucessores-gerados (funcall sucessores no-inicial operadores 'bfs))
-         ; Lista de nós sucessores que não existem na lista de nós abertos e fechados
+         ; Gera a lista que consiste na junção das listas de nós abertos
          (sucessores-abertos (apply #'append (mapcar (lambda (suc) (cond ((not (or (no-existp suc abertos 'dfs) (null (no-estado suc)))) (list suc)))) sucessores-gerados)))
-         ; Lista de nós que são solução
+         ; Gera a lista de nós que são solução
          (solucao (list (apply #'append (mapcar (lambda (suc) (cond ((funcall objetivop suc) suc))) sucessores-abertos))))
-         ; Lista de nós abertos com os nós sucessores (que não constam na lista de nós abertos e fechados) adicionados
+         ; Gera a lista de nós abertos com os nós sucessores (que não constam na lista de nós abertos) adicionados
          (abertos-novo (abertos-dfs abertos sucessores-abertos))
         )
           (cond 
@@ -239,6 +237,7 @@
   )
 )
 
+;; Função auxiliar para a procura em no algoritmo de procura em profundidade
 (defun dfs-loop (no-inicial objetivop sucessores operadores profundidade-max &optional abertos fechados)
   "Função auxiliar para o algoritmo de procura em profundidade"
          ; Lista de nós sucessores gerados pelo nó passado como argumento através dos operadores

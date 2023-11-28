@@ -37,7 +37,7 @@
 
 (defun ler-problema (n &optional (ficheiro (problemas-dat)))
   "Lê o ficheiro de problemas e devolve o problema n"
-  (with-open-file (stream ficheiro)
+  (with-open-file (stream ficheiro :direction :input :if-does-not-exist nil)
     (ler-ficheiro stream n)
   )
 )
@@ -45,16 +45,23 @@
 (defun ler-ficheiro (stream n)
   "Lê as linhas do ficheiro de problemas"
   (let ((linha (read-line stream nil)))
-    (format t "~a~%" linha)
-    (cond ((equal linha (concatenate 'string "*" (write-to-string n))) (format t "Encontrado"))
-          ((null linha) nil)
+    (cond ((null linha) nil)
+          ((equal linha (concatenate 'string "*" (write-to-string n))) (ler-propriedades-problema stream))
           (t (ler-ficheiro stream n ))
     )
   )
 )
 
-(defun ler-propriedades-problema ()
-
+(defun ler-propriedades-problema (stream &optional nome (tabuleiro "") (objetivo 0))
+  "Lê as propriedades do problema"
+  (let ((linha (read-line stream nil)))
+    (cond ((null linha) (list nome (read-from-string tabuleiro) objetivo))
+          ((equal (subseq linha 0 1) "*") (list nome (read-from-string tabuleiro) objetivo))
+          ((null nome) (ler-propriedades-problema stream linha tabuleiro objetivo))
+          ((equal (subseq linha 0 3) "Obj") (ler-propriedades-problema stream nome tabuleiro (parse-integer (subseq linha 10))))
+          (t (ler-propriedades-problema stream nome (concatenate 'string tabuleiro linha) objetivo))
+    )
+  )
 )
 
 (inicializar)
