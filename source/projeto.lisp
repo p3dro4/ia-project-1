@@ -35,6 +35,16 @@
   )
 )
 
+;; 
+(defun ler-todos-problemas (&optional (i 0) problemas (ficheiro (problemas-dat)))
+  "Lê todos os problemas"
+  (let ((problema (ler-problema i ficheiro)))
+    (cond ((null problema) problemas)
+          (t (ler-todos-problemas (+ i 1) (append problemas (list problema)) ficheiro))
+    )
+  )
+)
+;; Função que lê o ficheiro de problemas e devolve o problema n
 (defun ler-problema (n &optional (ficheiro (problemas-dat)))
   "Lê o ficheiro de problemas e devolve o problema n"
   (with-open-file (stream ficheiro :direction :input :if-does-not-exist nil)
@@ -42,6 +52,8 @@
   )
 )
 
+;; Função que lê as linhas do ficheiro de problemas e se encontrar o problema n
+;; chama a função ler-propriedades-problema
 (defun ler-ficheiro (stream n)
   "Lê as linhas do ficheiro de problemas"
   (let ((linha (read-line stream nil)))
@@ -52,10 +64,13 @@
   )
 )
 
+;; Função que lê as propriedades do problema e devolve uma lista com o nome,
+;; o tabuleiro e o objetivo
 (defun ler-propriedades-problema (stream &optional nome (tabuleiro "") (objetivo 0))
   "Lê as propriedades do problema"
   (let ((linha (read-line stream nil)))
-    (cond ((null linha) (list nome (read-from-string tabuleiro) objetivo))
+    (cond ((null linha) (list nome (read-from-string tabuleiro) objetivo))          
+          ((equal linha "") (ler-propriedades-problema stream nome tabuleiro objetivo))
           ((equal (subseq linha 0 1) "*") (list nome (read-from-string tabuleiro) objetivo))
           ((null nome) (ler-propriedades-problema stream linha tabuleiro objetivo))
           ((equal (subseq linha 0 3) "Obj") (ler-propriedades-problema stream nome tabuleiro (parse-integer (subseq linha 10))))

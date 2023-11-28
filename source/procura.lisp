@@ -118,27 +118,25 @@
         ))
 )
 
-;;; Funções auxliares de procura
-
-;; Função que verifica se um nó é solução para o problema A (pontuação >= 70)
-
-
-;; Função que verifica se um nó é solução para o problema B (pontuação >= 60)
-
 ;;; Funções auxiliares e de ordenação de nós
 
-;; abertos-bfs
+;; Função que adiciona os nós sucessores à lista de nós abertos,
+;; inserindo-os no fim da lista
 (defun abertos-bfs (lista-abertos lista-sucessores)
+  "Função que adiciona os nós sucessores à lista de nós abertos (bfs)"
   (append lista-abertos lista-sucessores)
 )
 
-;; abertos-dfs
+;; Função que adiciona os nós sucessores à lista de nós abertos,
+;; inserindo-os no início da lista
 (defun abertos-dfs (lista-abertos lista-sucessores)
+  "Função que adiciona os nós sucessores à lista de nós abertos (dfs)"
   (append lista-sucessores lista-abertos)
 )
 
-;; no-existp
+;; Função que verifica se um nó existe numa lista de nós
 (defun no-existp (no lista algoritmo)
+  "Função que verifica se um nó existe numa lista de nós"
   (cond
    ((or (null no) (null lista)) nil)
    ((equal algoritmo 'dfs) 
@@ -170,7 +168,7 @@
   )
 )
 
-;; Função auxiliar para a procura em no algoritmo de procura em largura
+;; Função auxiliar que implementa o algoritmo de procura em largura
 (defun bfs-loop (no-inicial objetivop sucessores operadores &optional abertos fechados)
   "Função auxiliar para o algoritmo de procura em largura"
         ; Gera a lista de nós sucessores, gerados pelo nó passado como argumento, através dos operadores
@@ -209,7 +207,7 @@
   )
 )
 
-;; Função auxiliar para a procura em no algoritmo de procura em profundidade
+;; Função auxiliar que implementa o algoritmo de procura em profundidade
 (defun dfs-loop (no-inicial objetivop sucessores operadores profundidade-max &optional abertos fechados)
   "Função auxiliar para o algoritmo de procura em profundidade"
          ; Lista de nós sucessores gerados pelo nó passado como argumento através dos operadores
