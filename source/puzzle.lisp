@@ -140,9 +140,17 @@
 (defun maior-numero-tabuleiro (tabuleiro)
   "Retorna o maior número do tabuleiro"
   (cond ((null tabuleiro) nil)
-        (t (apply #'max (mapcar (lambda (linha) (apply #'max (remover-se (lambda (num) (or (eq num t) (null num))) linha))) tabuleiro)))
+        (t (apply #'max (remover-se (lambda (num) (or (eq num t) (null num))) (juntar-linhas tabuleiro))))
   )
 )
+
+(defun juntar-linhas (tabuleiro)
+  "Junta as linhas do tabuleiro numa lista"
+  (cond ((null tabuleiro) nil)
+        (t (append (car tabuleiro) (juntar-linhas (cdr tabuleiro))))
+  )
+)
+
 
 ;; Função auxiliar que recebe uma lista de algarismos e retorna o número correspondente.
 ;; teste: (lista-para-numero '(1 2 3))
@@ -392,7 +400,7 @@
   "Escreve a posicao no ecrã"
   (cond ((null posicao) nil)
         ((not (= (length posicao) 2)) error "A posição não tem 2 elementos")
-        (t (format t "~a~a~%" (coluna-para-letra (second posicao)) (1+ (first posicao))))	
+        (t (format t "~a~a" (coluna-para-letra (second posicao)) (1+ (first posicao))))	
   ) 
 )
 
@@ -404,21 +412,7 @@
          (numero-linhas (length tabuleiro))
          (posicao-cavalo-inicial (posicao-cavalo (tabuleiro-jogado)))
         )
-    (format t "Tabuleiro aleatorio:~%")
-    (escreve-tabuleiro tabuleiro)
-    (format t "~%Tabuleiro de teste:~%")
-    (escreve-tabuleiro (tabuleiro-jogado))
-    (format t "~%Tabuleiro de teste com o cavalo colocado:~%")
-    (escreve-tabuleiro (tabuleiro-jogado))
-    (format t "~%Posisao do cavalo no tabuleiro de teste:~%")
-    (escreve-posicao (posicao-cavalo (tabuleiro-jogado)))
-    (format t "~%Tabuleiro de teste apos o movimento do cavalo com (operador-2):~%")
-    (escreve-tabuleiro (operador-2 (tabuleiro-jogado)))
-    (format t "~%Posisao do cavalo no tabuleiro de teste depois do movimento:~%")
-    (escreve-posicao (posicao-cavalo (operador-2 (tabuleiro-jogado))))
-    (format t "~%Tabuleiro de teste apos o segundo movimento do cavalo com (operador-2):~%")
-    (escreve-tabuleiro (operador-2 (operador-2 (tabuleiro-jogado))))
-    (format t "~%Posisao do cavalo no tabuleiro de teste depois do segundo movimento:~%")
-    (escreve-posicao (posicao-cavalo (operador-2 (operador-2 (tabuleiro-jogado)))))
+    (format t "Caminho do cavalo no tabuleiro de teste:~%")
+    (escreve-caminho (no-caminho (dfs (cria-no (tabuleiro-jogado)) 'solucao-e-p 'sucessores (operadores) 100)))
   )
 )
