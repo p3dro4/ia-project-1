@@ -44,11 +44,10 @@
 (defun colocar-cavalo (tabuleiro &optional (j (random (length (car tabuleiro)))))
   "Coloca o cavalo numa casa da 1ª linha do tabuleiro"
   (cond ((cavalo-colocado-p tabuleiro) nil)
-        (t (let ((n (length (car tabuleiro))))
-          (cond ((null (celula 0 j tabuleiro)) nil)
+        (t (cond ((null (celula 0 j tabuleiro)) nil)
                 (t (aplicar-regras (substituir 0 j tabuleiro t) (celula 0 j tabuleiro)))
-          )
-        ))
+           )
+        )
   )
 )
 
@@ -401,7 +400,7 @@
 (defun escreve-posicao (posicao)
   "Escreve a posicao no ecrã"
   (cond ((null posicao) nil)
-        ((not (= (length posicao) 2)) error "A posição não tem 2 elementos")
+        ((not (= (length posicao) 2)) (error "A posição não tem 2 elementos"))
         (t (format t "~a~a" (coluna-para-letra (second posicao)) (1+ (first posicao))))	
   ) 
 )

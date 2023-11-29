@@ -13,17 +13,19 @@
 )
 
 ;; Função que carrega todos os ficheiros de código e
-;; define a função problemas-dat
+;; define as funções necessárias
 (defun carregar-componentes (path)
-  "Carrega todos os ficheiros de código e define a função problemas-dat"
+  "Carrega todos os ficheiros de código e define as funções necessárias"
   (carregar-ficheiros path)
   (carregar-funcao-problemas-dat path)
+  (carregar-funcao-recarregar path)
+  (carregar-funcao-compilar-e-carregar path)
 )
 
 ;; Função que carrega os ficheiros de código 
 (defun carregar-ficheiros (path)
   "Carrega os ficheiros de código"
-  (load (merge-pathnames "procura" path))
+  (load (merge-pathnames "procura" path)) 
   (load (merge-pathnames "puzzle" path))
 )
 
@@ -35,7 +37,37 @@
   )
 )
 
-;; 
+;; Função que recarrega o ficheiro atual
+(defun carregar-funcao-recarregar (path)
+  "Recarrega o ficheiro atual"
+  (defun recarregar ()
+    (format t ";; A recarregar ficheiro \"~a.~a\"...~%" (pathname-name path) (pathname-type path))
+    (load path) 
+    (format t ";; Ficheiro \"~a.~a\" recarregado.~%" (pathname-name path) (pathname-type path))
+  )
+)
+
+(defun carregar-funcao-compilar-e-carregar (path)
+  (defun compilar-ficheiros ()
+    (compile-file path)
+    (compile-file (merge-pathnames "procura" path))
+    (compile-file (merge-pathnames "puzzle" path))
+  )
+  (defun carregar-ficheiros-compilados ()
+    (load (merge-pathnames (pathname-name path) path))
+    (carregar-ficheiros path)
+  )
+  (defun compilar-e-carregar ()
+    (format t ";; A compilar ficheiros...~%")
+    (compilar-ficheiros)
+    (format t ";; Ficheiros compilados.~%")
+    (format t ";; A carregar ficheiros...~%")
+    (carregar-ficheiros-compilados)
+    (format t ";; Ficheiros carregados.~%")
+  )
+)
+
+;; Função que lê o ficheiro de problemas e devolve uma lista com todos os problemas
 (defun ler-todos-problemas (&optional (i 0) problemas (ficheiro (problemas-dat)))
   "Lê todos os problemas"
   (let ((problema (ler-problema i ficheiro)))
@@ -44,6 +76,7 @@
     )
   )
 )
+
 ;; Função que lê o ficheiro de problemas e devolve o problema n
 (defun ler-problema (n &optional (ficheiro (problemas-dat)))
   "Lê o ficheiro de problemas e devolve o problema n"
