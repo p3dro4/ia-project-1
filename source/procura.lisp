@@ -169,6 +169,18 @@
   )
 )
 
+;; Compara dois nós, retornando o nó com maior pontuação
+(defun compara-nos (no1 no2)
+  "Compara dois nós, retornando o nó com maior pontuação"
+  (cond ((and (null no1) (null no2)) nil)
+        ((null no1) no2)
+        ((null no2) no1)
+        (t (cond ((>= (no-pontuacao no1) (no-pontuacao no2)) no1)
+                 (t no2))
+        )
+  ) 
+)
+
 ;;; Algoritmos de procura
 
 ;; Algoritmo de procura em largura
@@ -186,7 +198,7 @@
 )
 
 ;; Função auxiliar que implementa o algoritmo de procura em largura
-(defun bfs-loop (no-inicial objetivop funcao-sucessore operadores &optional (nos-expandidos 0) (nos-gerados 0) abertos fechados)
+(defun bfs-loop (no-inicial objetivop funcao-sucessore operadores &optional (nos-expandidos 0) (nos-gerados 0) abertos fechados no-max-pontos)
   "Função auxiliar para o algoritmo de procura em largura"
          ; Gera a lista de nós sucessores, gerados pelo nó passado como argumento, através dos operadores
   (let* ((sucessores-gerados (funcall funcao-sucessore no-inicial operadores 'bfs fechados))
@@ -195,16 +207,19 @@
          ; Gera a lista de nós abertos com os nós sucessores (que não constam na lista de nós abertos) adicionados
          (abertos-novo (abertos-dfs abertos sucessores-gerados))
         )
-        (let ((nos-expandidos-novo (1+ nos-expandidos)) (nos-gerados-novo (+ nos-gerados (length sucessores-gerados))))
+        (let ((nos-expandidos-novo (1+ nos-expandidos))
+              (nos-gerados-novo (+ nos-gerados (length sucessores-gerados)))
+              (no-max (compara-nos no-inicial no-max-pontos))
+             )
           (cond 
             ; Verifica se o nó inicial é solução, se for retorna-o
-            ((funcall objetivop no-inicial) (list no-inicial nos-expandidos-novo nos-gerados))
+            ((funcall objetivop no-inicial) (list no-inicial nos-expandidos-novo nos-gerados no-max))
             ; Verifica se a lista de nós abertos é nula, se for retorna NIL
-            ((null abertos-novo) (list nil nos-expandidos-novo nos-gerados-novo))
+            ((null abertos-novo) (list nil nos-expandidos-novo nos-gerados-novo no-max))
             ; Verifica se a lista de nós solução não é nula, se não for retorna o 1º nó da lista
-            ((not (null (car solucao))) (list (car solucao) nos-expandidos-novo nos-gerados-novo))
+            ((not (null (car solucao))) (list (car solucao) nos-expandidos-novo nos-gerados-novo no-max))
             ; Aplica recursividade para continuar a procurar
-            (t (bfs-loop (car abertos-novo) objetivop funcao-sucessore operadores nos-expandidos-novo nos-gerados-novo (cdr abertos-novo) (append fechados (list no-inicial))))
+            (t (bfs-loop (car abertos-novo) objetivop funcao-sucessore operadores nos-expandidos-novo nos-gerados-novo (cdr abertos-novo) (append fechados (list no-inicial)) no-max))
           )
         )
   )

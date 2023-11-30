@@ -7,7 +7,7 @@
   "Inicializa o programa"
   (format t ";; A carregar ficheiros...~%")
   (cond ((not (null *load-pathname*)) (progn (carregar-componentes *load-pathname*) (format t ";; Ficheiros carregados.~%")))
-        ((not (null *compile-file-pathname*)) (progn (carregar-componentes *compile-file-caminhoname*) (format t ";; Ficheiros carregados.~%")))
+        ((not (null *compile-file-pathname*)) (progn (carregar-componentes *compile-file-pathname*) (format t ";; Ficheiros carregados.~%")))
         (t (format t ";; Falha ao carregar ficheiros!!!~%"))
   )
 )
@@ -43,6 +43,21 @@
     (format t ";; A recarregar ficheiros...~%")
     (load caminho) 
     (format t ";; Ficheiros recarregados.~%")
+  )
+)
+
+;; Função que executa a experiência/resolução do problema fornecido
+;; e escreve no ficheiro experiencias.txt
+(defun carregar-funcao-escrever-ficheiro-experiencias (caminho)
+  "Carrega a função escrever-ficheiro-experiencias"
+  (defun escrever-ficheiro-experiencias (problema)
+    "Executa a experiencia/resolução do problema fornecido e escreve no ficheiro experiencias.txt"
+    (with-open-file (stream (merge-pathnames "../experiencias.txt" caminho) :direction :output :if-exists :append :if-does-not-exist :create)
+      (format stream "#~a - ~a~%" 0 (escreve-tempo (get-universal-time)))
+      (executar-experiencia problema stream)
+      (format stream "~%------------------------------------------~%")
+      (close stream)
+    )
   )
 )
 
@@ -91,22 +106,35 @@
   )
 )
 
+;; Função que executa a experiência/resolução do problema fornecido
+;; e escreve no output fornecido
 (defun executar-experiencia (problema &optional (output t))
+    "Executa a experiencia/resolução do problema fornecido"
     (format output "~a~%" (first problema))
     (escreve-tabuleiro-formatado (second problema) output t t)
     (format output "Objetivo: ~a~%" (third problema))
     (format output "~%** Algoritmos de procura **~%" )
     (format output "-- BFS --~%" )
-    ;(progn (format output "Solucao: ") (escreve-caminho (no-caminho (bfs (cria-no (second problema)) (lambda-objetivo (third problema)) 'sucessores (operadores))) output))
     (let ((resultado (bfs (cria-no (second problema)) (lambda-objetivo (third problema)) 'sucessores (operadores))))
-      (progn (format output "Solucao: ") (escreve-caminho (no-caminho (first resultado)) output))
-      (format output "~%Pontuacao: ~a~%" (no-pontuacao (first resultado)))
+      (progn (format output "Solucao: ") (cond ((not (null (first resultado))) (escreve-caminho (no-caminho (first resultado)) output)) (t (format output "**SEM SOLUCAO**"))))
+      (format output "~%Pontuacao: ~a~%" (cond ((not (null (no-pontuacao (first resultado)))) (no-pontuacao (first resultado))) (t "**SEM SOLUCAO**")))
+      (format output "Max. Pontuacao: ~a~%" (no-pontuacao (fourth resultado)))
       (format output "Nos expandidos: ~a~%" (second resultado))
       (format output "Nos gerados: ~a~%" (third resultado))
     )
 )
 
-(defun escrever-ficheiro-experiencias (problema &optional caminho)
+; TODO: Adicionar o print do tabuleiro
+(defun print-recursivo-no (no)
+  (cond ((null no) nil)
+        (t (progn (print-recursivo-no (no-pai no)) (format t "~a~%" (no-estado no))))
+  )
+)
+
+;; Função que executa a experiência/resolução do problema fornecido
+;; e escreve no ficheiro experiencias.txt
+(defun escrever-ficheiro-experiencias (problema)
+  "Executa a experiencia/resolução do problema fornecido e escreve no ficheiro experiencias.txt"
   (with-open-file (stream "experiencias.txt" :direction :output :if-exists :append :if-does-not-exist :create)
     (format stream "#~a - ~a~%" 0 (escreve-tempo (get-universal-time)))
     (executar-experiencia problema stream)
@@ -115,11 +143,14 @@
   )
 )
 
-(defun ultimo-id-experiencia (nome-ficheiro caminho)
+(defun ultimo-id-experiencia (caminho)
   
 )
 
+;; Função que escreve o tempo no formato dd/mm/aaaa @ hh:mm:ss
+;; no output fornecido
 (defun escreve-tempo (tempo-universal &optional output)
+  "Escreve o tempo fornecido no formato dd/mm/aaaa @ hh:mm:ss"
   (multiple-value-bind (segundos minutos horas dia mes ano) (decode-universal-time tempo-universal)
     (format output "~2,'0d/~2,'0d/~2,'0d @ ~2,'0d:~2,'0d:~2,'0d" dia mes ano horas minutos segundos)
   )
