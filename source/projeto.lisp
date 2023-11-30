@@ -26,7 +26,6 @@
   "Carrega os ficheiros de código"
   (load (merge-pathnames "procura" caminho)) 
   (load (merge-pathnames "puzzle" caminho))
-  (load (merge-pathnames "testes" caminho)) ; TODO: Remover ficheiro (temporário)
 )
 
 ;; Função carrega o ficheiro de problemas
