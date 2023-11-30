@@ -4,6 +4,8 @@
 
 ;;;; Algoritmo de procura em largura e profundidade (BFS e DFS) e A*
 
+; TODO: Possívelmente mudar a parte dos nós para o ficheiro puzzle.lisp
+
 ;;; Construtor
 
 ;; Cria um nó com o tabuleiro, o custo e o nó pai
@@ -93,11 +95,19 @@
 )
 
 ;; Função que retorna a lista de sucessores de um nó
-(defun sucessores (no operadores algoritmo &optional (profundidade-max 0))
+(defun sucessores (no operadores algoritmo &optional lista-sucessores (profundidade-max 0))
   "Função que retorna a lista de sucessores de um nó"
-  (cond ((>= (no-profundidade no) 8) nil)
+  (cond ((null no) nil)
+        ((>= (no-profundidade no) 8) nil)
         ((and (equal algoritmo 'dfs) (>= (no-profundidade no) profundidade-max)) nil)
-        (t (mapcar (lambda (op) (novo-sucessor no op)) operadores))
+        (t (apply #'append (mapcar (lambda (op) 
+              (let ((sucessor (novo-sucessor no op)))
+                    (cond ((null sucessor) nil)
+                          ((no-existp sucessor lista-sucessores algoritmo) nil)
+                          (t (list sucessor))
+                    ))
+              ) operadores))
+        )
   )
 )
 
@@ -119,6 +129,13 @@
 )
 
 ;;; Funções auxiliares e de ordenação de nós
+
+;; Função que recebe um valor e retorna uma função lambda
+;; que recebe um nó e verifica se a sua pontuação é maior ou igual ao valor dado
+(defun lambda-objetivo (valor)
+  "Função que recebe um valor e retorna uma função lambda que recebe um nó e verifica se a sua pontuação é maior ou igual ao valor dado"
+  (lambda (no) (>= (no-pontuacao no) valor))
+)
 
 ;; Função que adiciona os nós sucessores à lista de nós abertos,
 ;; inserindo-os no fim da lista
@@ -155,45 +172,47 @@
 ;;; Algoritmos de procura
 
 ;; Algoritmo de procura em largura
-(defun bfs (no-inicial objetivop sucessores operadores &optional abertos fechados)
+(defun bfs (no-inicial objetivop funcao-sucessores operadores &optional abertos fechados)
   "Implementação do algoritmo de procura em largura. Recebe o nó inicial, o objetivo de pontuação, os nós sucessores, os operadores e como parâmetros opcionais a lista de abertos e fechados. Retorna uma lista com os nós que compõem o caminho, ou NIL."
         ; Caso base: primeira chamada da função; profundidade é zero; o cavalo é colocado na primeira linha
   (cond ((= (no-profundidade no-inicial) 0) 
          (let ((sucessores-no-inicial (sucessores-iniciais no-inicial)))
-          (bfs (car sucessores-no-inicial) objetivop sucessores operadores (cdr sucessores-no-inicial) (append fechados (list no-inicial)))
+          (bfs (car sucessores-no-inicial) objetivop funcao-sucessores operadores (cdr sucessores-no-inicial) (append fechados (list no-inicial)))
          )
         )
         ; Caso recursivo: executa a função normalmente, com recurso à função auxiliar
-        (t (bfs-loop no-inicial objetivop sucessores operadores abertos fechados))
+        (t (bfs-loop no-inicial objetivop funcao-sucessores operadores (length fechados) (+ (length abertos) (length fechados)) abertos fechados))
   )
 )
 
 ;; Função auxiliar que implementa o algoritmo de procura em largura
-(defun bfs-loop (no-inicial objetivop sucessores operadores &optional abertos fechados)
+(defun bfs-loop (no-inicial objetivop funcao-sucessore operadores &optional (nos-expandidos 0) (nos-gerados 0) abertos fechados)
   "Função auxiliar para o algoritmo de procura em largura"
-        ; Gera a lista de nós sucessores, gerados pelo nó passado como argumento, através dos operadores
-  (let* ((sucessores-gerados (funcall sucessores no-inicial operadores 'bfs))
-         ; Gera a lista que consiste na junção das listas de nós abertos
-         (sucessores-abertos (apply #'append (mapcar (lambda (suc) (cond ((not (or (no-existp suc abertos 'dfs) (null (no-estado suc)))) (list suc)))) sucessores-gerados)))
+         ; Gera a lista de nós sucessores, gerados pelo nó passado como argumento, através dos operadores
+  (let* ((sucessores-gerados (funcall funcao-sucessore no-inicial operadores 'bfs fechados))
          ; Gera a lista de nós que são solução
-         (solucao (list (apply #'append (mapcar (lambda (suc) (cond ((funcall objetivop suc) suc))) sucessores-abertos))))
+         (solucao (list (apply #'append (mapcar (lambda (suc) (cond ((funcall objetivop suc) suc))) sucessores-gerados))))
          ; Gera a lista de nós abertos com os nós sucessores (que não constam na lista de nós abertos) adicionados
-         (abertos-novo (abertos-dfs abertos sucessores-abertos))
+         (abertos-novo (abertos-dfs abertos sucessores-gerados))
         )
+        (let ((nos-expandidos-novo (1+ nos-expandidos)) (nos-gerados-novo (+ nos-gerados (length sucessores-gerados))))
           (cond 
             ; Verifica se o nó inicial é solução, se for retorna-o
-            ((funcall objetivop no-inicial) no-inicial)
+            ((funcall objetivop no-inicial) (list no-inicial nos-expandidos-novo nos-gerados))
             ; Verifica se a lista de nós abertos é nula, se for retorna NIL
-            ((null abertos-novo) nil)
+            ((null abertos-novo) (list nil nos-expandidos-novo nos-gerados-novo))
             ; Verifica se a lista de nós solução não é nula, se não for retorna o 1º nó da lista
-            ((not (null (car solucao))) (car solucao))
+            ((not (null (car solucao))) (list (car solucao) nos-expandidos-novo nos-gerados-novo))
             ; Aplica recursividade para continuar a procurar
-            (t (bfs-loop (car abertos-novo) objetivop sucessores operadores (cdr abertos-novo) (append fechados (list no-inicial))))
+            (t (bfs-loop (car abertos-novo) objetivop funcao-sucessore operadores nos-expandidos-novo nos-gerados-novo (cdr abertos-novo) (append fechados (list no-inicial))))
           )
+        )
   )
 )
 
 ;; Algoritmo de procura em profundidade
+; TODO: Adicionar número de nós gerados e expandidos no retorno
+; FIXME: Alterar o algoritmo para que fique parecido com o bfs
 (defun dfs (no-inicial objetivop sucessores operadores profundidade-max &optional abertos fechados)
   "Implementação do algoritmo de procura em largura. Recebe o nó inicial, o objetivo de pontuação, os nós sucessores, os operadores e como parâmetros opcionais a lista de abertos e fechados. Retorna uma lista com os nós que compõem o caminho, ou NIL."
         ; Caso base: primeira chamada da função; profundidade é zero; o cavalo é colocado na primeira linha
@@ -237,10 +256,10 @@
 ;;; Escrita de soluções
 
 ;; Função que escreve o caminho percorrido
-(defun escreve-caminho (caminho)
+(defun escreve-caminho (caminho &optional (output t))
   "Função que escreve o caminho percorrido"
   (cond ((null caminho) nil)
-        ((= (length caminho) 1) (escreve-posicao (car caminho)))
-        (t (progn (escreve-posicao (car caminho)) (format t "->") (escreve-caminho (cdr caminho))))     
+        ((= (length caminho) 1) (escreve-posicao (car caminho) output))
+        (t (progn (escreve-posicao (car caminho) output) (format output "->") (escreve-caminho (cdr caminho) output)))     
   )
 )

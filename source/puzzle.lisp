@@ -118,7 +118,9 @@
 ;; resultado: 321
 (defun simetrico (num)
   "Retorna o número simétrico"
-  (lista-para-numero (reverse (numero-para-lista num)))
+  (cond ((< num 10) (lista-para-numero (reverse (list 0 num))))
+        (t (lista-para-numero (reverse (numero-para-lista num))))
+  )
 )
 
 ;; Função que recebe um número e retorna t se o número for duplo i.e. se for composto por dois algarismos iguais.
@@ -388,19 +390,44 @@
 
 ;;; Escrita do tabuleiro
 
-;; Função que recebe um tabuleiro e escreve-o no ecrã.
-(defun escreve-tabuleiro (tabuleiro)
+;; Função que recebe um tabuleiro e escreve-o no output.
+(defun escreve-tabuleiro (tabuleiro &optional (output t))
   "Escreve o tabuleiro no ecrã"
   (cond ((null tabuleiro) nil)
-        (t (progn (format t "~a~%" (car tabuleiro)) (escreve-tabuleiro (cdr tabuleiro))))
+        (t (progn (format output "~a~%" (car tabuleiro)) (escreve-tabuleiro (cdr tabuleiro) output)))
   )
 )
 
+;; Função que recebe um tabuleiro e escreve-o no output formatado.
+(defun escreve-tabuleiro-formatado (tabuleiro &optional (output t) numero-linha letra-coluna (i 0))
+  "Escreve o tabuleiro no ecrã formatado"
+  (cond (letra-coluna (progn (cond (numero-linha (format output "   ")))(format output "   A   B   C   D   E   F   G   H   I   J~%") (escreve-tabuleiro-formatado tabuleiro output numero-linha nil i)))
+        ((null tabuleiro) nil)
+        ((>= i (length tabuleiro)) nil)
+        (t (progn
+            (cond (numero-linha (format output "~2,'0d " (1+ i))))
+            (format output "|" )
+            (mapcar (lambda (cel) (cond 
+              ((numberp cel) (format output " ~2,'0d " cel))
+              ((eq cel t) (format output " TT "))
+              (t (format output " .. "))
+            )) (linha i tabuleiro))
+            (format output "|~%")
+            (escreve-tabuleiro-formatado tabuleiro output numero-linha nil (1+ i))
+           )
+        )
+  )
+)
+
+(defun escreve-linha-formatada (linha-membros &optional (output t))
+  ()
+)
+
 ;; Função que recebe uma posição e escreve-a no ecrã.
-(defun escreve-posicao (posicao)
+(defun escreve-posicao (posicao &optional (output t))
   "Escreve a posicao no ecrã"
   (cond ((null posicao) nil)
         ((not (= (length posicao) 2)) (error "A posição não tem 2 elementos"))
-        (t (format t "~a~a" (coluna-para-letra (second posicao)) (1+ (first posicao))))	
+        (t (format output "~a~a" (coluna-para-letra (second posicao)) (1+ (first posicao))))	
   ) 
 )
