@@ -98,7 +98,7 @@
 (defun sucessores (no operadores algoritmo &optional lista-sucessores (profundidade-max 0))
   "Função que retorna a lista de sucessores de um nó"
   (cond ((null no) nil)
-        ((>= (no-profundidade no) 8) nil)
+        ((>= (no-profundidade no) 8) nil) ; Máximo de 8 movimentos
         ((and (equal algoritmo 'dfs) (>= (no-profundidade no) profundidade-max)) nil)
         (t (apply #'append (mapcar (lambda (op) 
               (let ((sucessor (novo-sucessor no op)))
@@ -205,6 +205,50 @@
          ; Gera a lista de nós que são solução
          (solucao (list (apply #'append (mapcar (lambda (suc) (cond ((funcall objetivop suc) suc))) sucessores-gerados))))
          ; Gera a lista de nós abertos com os nós sucessores (que não constam na lista de nós abertos) adicionados
+         (abertos-novo (abertos-bfs abertos sucessores-gerados))
+        )
+        (let ((nos-expandidos-novo (1+ nos-expandidos))
+              (nos-gerados-novo (+ nos-gerados (length sucessores-gerados)))
+              (no-max (compara-nos no-inicial no-max-pontos))
+             )
+          (cond 
+            ; Verifica se o nó inicial é solução, se for retorna-o
+            ((funcall objetivop no-inicial) (list no-inicial nos-expandidos-novo nos-gerados no-max))
+            ; Verifica se a lista de nós abertos é nula, se for retorna NIL
+            ((null abertos-novo) (list nil nos-expandidos-novo nos-gerados-novo no-max))
+            ; Verifica se a lista de nós solução não é nula, se não for retorna o 1º nó da lista
+            ((not (null (car solucao))) (list (car solucao) nos-expandidos-novo nos-gerados-novo (car solucao)))
+            ; Aplica recursividade para continuar a procurar
+            (t (bfs-loop (car abertos-novo) objetivop funcao-sucessore operadores nos-expandidos-novo nos-gerados-novo (cdr abertos-novo) (append fechados (list no-inicial)) no-max))
+          )
+        )
+  )
+)
+
+;; Algoritmo de procura em profundidade
+(defun dfs (no-inicial objetivop funcao-sucessores operadores profundidade-max &optional abertos fechados)
+  "Implementação do algoritmo de procura em largura. Recebe o nó inicial, o objetivo de pontuação, os nós sucessores, os operadores e como parâmetros opcionais a lista de abertos e fechados. Retorna uma lista com os nós que compõem o caminho, ou NIL."
+         ; Caso base: primeira chamada da função; profundidade é zero; o cavalo é colocado na primeira linha
+  (cond ((= (no-profundidade no-inicial) 0) 
+         (let ((sucessores-no-inicial (sucessores-iniciais no-inicial)))
+          (dfs (car sucessores-no-inicial) objetivop funcao-sucessores operadores profundidade-max (cdr sucessores-no-inicial) (append fechados (list no-inicial)))
+         )
+        )
+        ; Caso recursivo: executa a função normalmente, com recurso à função auxiliar
+        (t (dfs-loop no-inicial objetivop funcao-sucessores operadores profundidade-max (length fechados) (+ (length abertos) (length fechados)) abertos fechados))
+  )
+)
+
+;; Função auxiliar que implementa o algoritmo de procura em profundidade
+(defun dfs-loop (no-inicial objetivop funcao-sucessores operadores profundidade-max &optional (nos-expandidos 0) (nos-gerados 0) abertos fechados no-max-pontos)
+  "Função auxiliar para o algoritmo de procura em profundidade"
+         ; Lista de nós abertos juntamente com os nós fechados
+  (let* ((abertos-fechados (append abertos fechados))
+         ; Lista de nós sucessores gerados pelo nó passado como argumento através dos operadores
+         (sucessores-gerados (funcall funcao-sucessores no-inicial operadores 'dfs abertos-fechados profundidade-max))
+         ; Lista de nós que são solução
+         (solucao (list (apply #'append (mapcar (lambda (suc) (cond ((funcall objetivop suc) suc))) sucessores-gerados))))
+         ; Lista de nós abertos com os nós sucessores (que não constam na lista de nós abertos e fechados) adicionados
          (abertos-novo (abertos-dfs abertos sucessores-gerados))
         )
         (let ((nos-expandidos-novo (1+ nos-expandidos))
@@ -217,54 +261,11 @@
             ; Verifica se a lista de nós abertos é nula, se for retorna NIL
             ((null abertos-novo) (list nil nos-expandidos-novo nos-gerados-novo no-max))
             ; Verifica se a lista de nós solução não é nula, se não for retorna o 1º nó da lista
-            ((not (null (car solucao))) (list (car solucao) nos-expandidos-novo nos-gerados-novo no-max))
+            ((not (null (car solucao))) (list (car solucao) nos-expandidos-novo nos-gerados-novo (car solucao)))
             ; Aplica recursividade para continuar a procurar
-            (t (bfs-loop (car abertos-novo) objetivop funcao-sucessore operadores nos-expandidos-novo nos-gerados-novo (cdr abertos-novo) (append fechados (list no-inicial)) no-max))
+            (t (dfs-loop (car abertos-novo) objetivop funcao-sucessores operadores profundidade-max nos-expandidos-novo nos-gerados-novo (cdr abertos-novo) (append fechados (list no-inicial)) no-max))
           )
         )
-  )
-)
-
-;; Algoritmo de procura em profundidade
-; TODO: Adicionar número de nós gerados e expandidos no retorno
-; FIXME: Alterar o algoritmo para que fique parecido com o bfs
-(defun dfs (no-inicial objetivop sucessores operadores profundidade-max &optional abertos fechados)
-  "Implementação do algoritmo de procura em largura. Recebe o nó inicial, o objetivo de pontuação, os nós sucessores, os operadores e como parâmetros opcionais a lista de abertos e fechados. Retorna uma lista com os nós que compõem o caminho, ou NIL."
-        ; Caso base: primeira chamada da função; profundidade é zero; o cavalo é colocado na primeira linha
-  (cond ((= (no-profundidade no-inicial) 0) 
-         (let ((sucessores-no-inicial (sucessores-iniciais no-inicial)))
-          (dfs (car sucessores-no-inicial) objetivop sucessores operadores profundidade-max (cdr sucessores-no-inicial) (append fechados (list no-inicial)))
-         )
-        )
-        ; Caso recursivo: executa a função normalmente, com recurso à função auxiliar
-        (t (dfs-loop no-inicial objetivop sucessores operadores profundidade-max abertos fechados))
-  )
-)
-
-;; Função auxiliar que implementa o algoritmo de procura em profundidade
-(defun dfs-loop (no-inicial objetivop sucessores operadores profundidade-max &optional abertos fechados)
-  "Função auxiliar para o algoritmo de procura em profundidade"
-         ; Lista de nós sucessores gerados pelo nó passado como argumento através dos operadores
-  (let* ((sucessores-gerados (funcall sucessores no-inicial operadores 'dfs profundidade-max))
-         ; Lista de nós abertos juntamente com os nós fechados
-         (abertos-fechados (append abertos fechados))
-         ; Lista de nós sucessores que não existem na lista de nós abertos e fechados
-         (sucessores-abertos (apply #'append (mapcar (lambda (suc) (cond ((not (or (no-existp suc abertos-fechados 'dfs) (null (no-estado suc)))) (list suc))))sucessores-gerados)))
-         ; Lista de nós que são solução
-         (solucao (list (apply #'append (mapcar (lambda (suc) (cond ((funcall objetivop suc) suc))) sucessores-abertos))))
-         ; Lista de nós abertos com os nós sucessores (que não constam na lista de nós abertos e fechados) adicionados
-         (abertos-novo (abertos-dfs abertos sucessores-abertos))
-        )
-          (cond 
-            ; Verifica se o nó inicial é solução, se for retorna-o
-            ((funcall objetivop no-inicial) no-inicial)
-            ; Verifica se a lista de nós abertos é nula, se for retorna NIL
-            ((null abertos-novo) nil)
-            ; Verifica se a lista de nós solução não é nula, se não for retorna o 1º nó da lista
-            ((not (null (car solucao))) (car solucao))
-            ; Aplica recursividade para continuar a procurar
-            (t (dfs-loop (car abertos-novo) objetivop sucessores operadores profundidade-max (cdr abertos-novo) (append fechados (list no-inicial))))
-          )
   )
 )
 

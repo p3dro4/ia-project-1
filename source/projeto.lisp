@@ -108,39 +108,40 @@
 
 ;; Função que executa a experiência/resolução do problema fornecido
 ;; e escreve no output fornecido
-(defun executar-experiencia (problema &optional (output t))
+(defun executar-experiencia (problema &optional (max-profundidade 8) (output t))
     "Executa a experiencia/resolução do problema fornecido"
     (format output "~a~%" (first problema))
     (escreve-tabuleiro-formatado (second problema) output t t)
     (format output "Objetivo: ~a~%" (third problema))
-    (format output "~%** Algoritmos de procura **~%" )
-    (format output "-- BFS --~%" )
-    (let ((resultado (bfs (cria-no (second problema)) (lambda-objetivo (third problema)) 'sucessores (operadores))))
-      (progn (format output "Solucao: ") (cond ((not (null (first resultado))) (escreve-caminho (no-caminho (first resultado)) output)) (t (format output "**SEM SOLUCAO**"))))
-      (format output "~%Pontuacao: ~a~%" (cond ((not (null (no-pontuacao (first resultado)))) (no-pontuacao (first resultado))) (t "**SEM SOLUCAO**")))
-      (format output "Max. Pontuacao: ~a~%" (no-pontuacao (fourth resultado)))
-      (format output "Nos expandidos: ~a~%" (second resultado))
-      (format output "Nos gerados: ~a~%" (third resultado))
-    )
+    (format output "~%*Algoritmos de procura*~%" )
+    (format output "--BFS--~%" )
+    (executar-algoritmo-problema problema 'bfs output)
+    (format output "~%--DFS--~%" )
+    (executar-algoritmo-problema problema 'dfs output max-profundidade )
 )
 
-; TODO: Adicionar o print do tabuleiro
-(defun print-recursivo-no (no)
+;; Função que escreve os passos do caminho no output fornecido
+(defun escreve-estados-resultado (no &optional (output t))
+  "Escreve os passos do caminho no output fornecido"
   (cond ((null no) nil)
-        (t (progn (print-recursivo-no (no-pai no)) (format t "~a~%" (no-estado no))))
+        (t (progn (escreve-estados-resultado (no-pai no)) (escreve-tabuleiro-formatado (no-estado no) output t t) (format output "~%")))
   )
 )
 
-;; Função que executa a experiência/resolução do problema fornecido
-;; e escreve no ficheiro experiencias.txt
-(defun escrever-ficheiro-experiencias (problema)
-  "Executa a experiencia/resolução do problema fornecido e escreve no ficheiro experiencias.txt"
-  (with-open-file (stream "experiencias.txt" :direction :output :if-exists :append :if-does-not-exist :create)
-    (format stream "#~a - ~a~%" 0 (escreve-tempo (get-universal-time)))
-    (executar-experiencia problema stream)
-    (format stream "~%------------------------------------------~%")
-    (close stream)
-  )
+;; Função que executa o algoritmo de procura fornecido no problema fornecido
+(defun executar-algoritmo-problema (problema algoritmo &optional (output t) (max-profundidade 8))
+  "Executa o algoritmo de procura fornecido no problema fornecido"
+  (let* ((tempo-inicial (get-internal-real-time))
+           (resultado (funcall algoritmo (cria-no (problema-tabuleiro problema)) (lambda-objetivo (problema-objetivo problema)) 'sucessores (operadores) max-profundidade))
+           (tempo-de-execucao (- (get-internal-real-time) tempo-inicial))
+          )
+      (progn (format output "Solucao: ") (cond ((not (null (resultado-no resultado))) (escreve-caminho (no-caminho (resultado-no resultado)) output)) (t (format output "**SEM SOLUCAO**"))))
+      (format output "~%Pontuacao: ~a~%" (cond ((not (null (no-pontuacao (resultado-no resultado)))) (no-pontuacao (resultado-no resultado))) (t "**SEM SOLUCAO**")))
+      (format output "Max. Pontuacao: ~a~%" (no-pontuacao (resultado-no-max-pontuacao resultado)))
+      (format output "Nos expandidos: ~a~%" (resultado-nos-expandidos resultado))
+      (format output "Nos gerados: ~a~%" (resultado-nos-gerados resultado))
+      (format output "Tempo de execucao: ~,6f seg.~%" (/ tempo-de-execucao internal-time-units-per-second))
+    )
 )
 
 (defun ultimo-id-experiencia (caminho)
@@ -155,5 +156,50 @@
     (format output "~2,'0d/~2,'0d/~2,'0d @ ~2,'0d:~2,'0d:~2,'0d" dia mes ano horas minutos segundos)
   )
 )
+
+;;; Seletores
+
+;; Função que seleciona o nome do problema
+(defun problema-nome (problema)
+  "Seleciona o nome do problema"
+  (first problema)
+)
+
+;; Função que seleciona o tabuleiro do problema~
+(defun problema-tabuleiro (problema)
+  "Seleciona o tabuleiro do problema"
+  (second problema)
+)
+
+;; Função que seleciona o objetivo do problema
+(defun problema-objetivo (problema)
+  "Seleciona o objetivo do problema"
+  (third problema)
+)
+
+;; Função que seleciona o nó resultante do algoritmo de procura
+(defun resultado-no (resultado)
+  "Seleciona o nó resultante do algoritmo de procura"
+  (first resultado)
+)
+
+;; Função que seleciona o nó com a pontuacao máxima do resultado
+(defun resultado-nos-expandidos (resultado)
+  "Seleciona o número de nós expandidos do resultado"
+  (second resultado)
+)
+
+;; Função que seleciona o nó com a pontuacao máxima do resultado
+(defun resultado-nos-gerados (resultado)
+  "Seleciona o número de nós gerados do resultado"
+  (third resultado)
+)
+
+;; Função que seleciona o nó com a pontuacao máxima do resultado
+(defun resultado-no-max-pontuacao (resultado)
+  "Seleciona o nó com a pontuacao máxima do resultado"
+  (fourth resultado)
+)
+
 
 (inicializar)
