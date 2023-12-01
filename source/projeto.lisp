@@ -18,6 +18,7 @@
   "Carrega todos os ficheiros de código e define as funções necessárias"
   (carregar-ficheiros caminho)
   (carregar-funcao-problemas-dat caminho)
+  (carregar-funcao-experiencias-txt caminho)
   (carregar-funcao-recarregar caminho)
 )
 
@@ -26,14 +27,6 @@
   "Carrega os ficheiros de código"
   (load (merge-pathnames "procura" caminho)) 
   (load (merge-pathnames "puzzle" caminho))
-)
-
-;; Função carrega o ficheiro de problemas
-(defun carregar-funcao-problemas-dat (caminho)
-  "Carrega o ficheiro de problemas"
-  (defun problemas-dat ()
-    (merge-pathnames "../problemas.dat" caminho)
-  )
 )
 
 ;; Função que recarrega o ficheiro atual
@@ -46,18 +39,19 @@
   )
 )
 
-;; Função que executa a experiência/resolução do problema fornecido
-;; e escreve no ficheiro experiencias.txt
-(defun carregar-funcao-escrever-ficheiro-experiencias (caminho)
-  "Carrega a função escrever-ficheiro-experiencias"
-  (defun escrever-ficheiro-experiencias (problema)
-    "Executa a experiencia/resolução do problema fornecido e escreve no ficheiro experiencias.txt"
-    (with-open-file (stream (merge-pathnames "../experiencias.txt" caminho) :direction :output :if-exists :append :if-does-not-exist :create)
-      (format stream "#~a - ~a~%" 0 (escreve-tempo (get-universal-time)))
-      (executar-experiencia problema stream)
-      (format stream "~%------------------------------------------~%")
-      (close stream)
-    )
+;; Função carrega o ficheiro de problemas
+(defun carregar-funcao-problemas-dat (caminho)
+  "Carrega o ficheiro de problemas"
+  (defun problemas-dat ()
+    (merge-pathnames "../problemas.dat" caminho)
+  )
+)
+
+;; Função que carrega o ficheiro de experiencias
+(defun carregar-funcao-experiencias-txt (caminho)
+  "Carrega o ficheiro de experiencias"
+  (defun experiencias-txt ()
+    (merge-pathnames "../experiencias.txt" caminho)
   )
 )
 
@@ -75,18 +69,18 @@
 (defun ler-problema (n &optional (ficheiro (problemas-dat)))
   "Lê o ficheiro de problemas e devolve o problema n"
   (with-open-file (stream ficheiro :direction :input :if-does-not-exist nil)
-    (ler-ficheiro stream n)
+    (ler-ficheiro-problemas stream n)
   )
 )
 
 ;; Função que lê as linhas do ficheiro de problemas e se encontrar o problema n
 ;; chama a função ler-propriedades-problema
-(defun ler-ficheiro (stream n)
+(defun ler-ficheiro-problemas (stream n)
   "Lê as linhas do ficheiro de problemas"
   (let ((linha (read-line stream nil)))
     (cond ((null linha) nil)
           ((equal linha (concatenate 'string "*" (write-to-string n))) (ler-propriedades-problema stream))
-          (t (ler-ficheiro stream n ))
+          (t (ler-ficheiro-problemas stream n ))
     )
   )
 )
@@ -106,9 +100,33 @@
   )
 )
 
+;; Função que escreve a experiência/resolução do problema fornecido
+;; no output fornecido (por default escreve no ficheiro experiencias.txt)
+(defun escreve-experiencia (problema &optional (output (experiencias-txt)))
+  "Executa a experiencia/resolução do problema fornecido e escreve no ficheiro experiencias.txt"
+  (let ((ultimo-id (ultimo-id-experiencia)))
+    (cond ((pathnamep output) 
+          (with-open-file (ficheiro output :direction :output :if-exists :append :if-does-not-exist :create)
+            (escreve-conteudo-experiencia problema ficheiro ultimo-id)
+            (close ficheiro)
+          ))
+          (t (escreve-conteudo-experiencia problema output))
+    )
+  )
+)
+
+;; Função auxiliar que escreve o conteúdo da experiência/resolução do problema fornecido
+;; no output fornecido
+(defun escreve-conteudo-experiencia (problema output &optional (ultimo-id 0))
+  "Escreve o conteúdo da experiencia/resolução do problema fornecido no output fornecido"
+  (format output "#~a - ~a~%" (1+ ultimo-id) (escreve-tempo (get-universal-time)))
+  (executar-experiencia problema output)
+  (format output "~%------------------------------------------~%")
+)
+
 ;; Função que executa a experiência/resolução do problema fornecido
 ;; e escreve no output fornecido
-(defun executar-experiencia (problema &optional (max-profundidade 8) (output t))
+(defun executar-experiencia (problema &optional (output t) (max-profundidade 8))
     "Executa a experiencia/resolução do problema fornecido"
     (format output "~a~%" (first problema))
     (escreve-tabuleiro-formatado (second problema) output t t)
@@ -117,15 +135,7 @@
     (format output "--BFS--~%" )
     (executar-algoritmo-problema problema 'bfs output)
     (format output "~%--DFS--~%" )
-    (executar-algoritmo-problema problema 'dfs output max-profundidade )
-)
-
-;; Função que escreve os passos do caminho no output fornecido
-(defun escreve-estados-resultado (no &optional (output t))
-  "Escreve os passos do caminho no output fornecido"
-  (cond ((null no) nil)
-        (t (progn (escreve-estados-resultado (no-pai no)) (escreve-tabuleiro-formatado (no-estado no) output t t) (format output "~%")))
-  )
+    (executar-algoritmo-problema problema 'dfs output max-profundidade)
 )
 
 ;; Função que executa o algoritmo de procura fornecido no problema fornecido
@@ -142,19 +152,6 @@
       (format output "Nos gerados: ~a~%" (resultado-nos-gerados resultado))
       (format output "Tempo de execucao: ~,6f seg.~%" (/ tempo-de-execucao internal-time-units-per-second))
     )
-)
-
-(defun ultimo-id-experiencia (caminho)
-  
-)
-
-;; Função que escreve o tempo no formato dd/mm/aaaa @ hh:mm:ss
-;; no output fornecido
-(defun escreve-tempo (tempo-universal &optional output)
-  "Escreve o tempo fornecido no formato dd/mm/aaaa @ hh:mm:ss"
-  (multiple-value-bind (segundos minutos horas dia mes ano) (decode-universal-time tempo-universal)
-    (format output "~2,'0d/~2,'0d/~2,'0d @ ~2,'0d:~2,'0d:~2,'0d" dia mes ano horas minutos segundos)
-  )
 )
 
 ;;; Seletores
@@ -201,5 +198,54 @@
   (fourth resultado)
 )
 
+;; Funções Auxiliares
+
+;; Função que escreve o tempo no formato dd/mm/aaaa @ hh:mm:ss
+;; no output fornecido
+(defun escreve-tempo (tempo-universal &optional output)
+  "Escreve o tempo fornecido no formato dd/mm/aaaa @ hh:mm:ss"
+  (multiple-value-bind (segundos minutos horas dia mes ano) (decode-universal-time tempo-universal)
+    (format output "~2,'0d/~2,'0d/~2,'0d @ ~2,'0d:~2,'0d:~2,'0d" dia mes ano horas minutos segundos)
+  )
+)
+
+;; Função que escreve os passos do caminho no output fornecido
+(defun escreve-estados-resultado (no &optional (output t))
+  "Escreve os passos do caminho no output fornecido"
+  (cond ((null no) nil)
+        (t (progn (escreve-estados-resultado (no-pai no)) (escreve-tabuleiro-formatado (no-estado no) output t t) (format output "~%")))
+  )
+)
+
+;; Função que retorna o último id da experiência
+;; do ficheiro experiencias.txt
+(defun ultimo-id-experiencia ()
+  "Retorna o último id da experiência do ficheiro experiencias.txt"
+  (with-open-file (ficheiro (experiencias-txt) :direction :input :if-does-not-exist :create)
+    (ultimo-id-experiencia-ficheiro ficheiro)
+  )
+)
+
+;; Função axuiliar que retorna o último id da experiência
+(defun ultimo-id-experiencia-ficheiro (ficheiro &optional (ultimo-id 0))
+  "Retorna o último id da experiência"
+  (let ((linha (read-line ficheiro nil)))
+    (cond ((null linha) ultimo-id)
+          ((equal linha "") (ultimo-id-experiencia-ficheiro ficheiro ultimo-id))
+          ((equal (subseq linha 0 1) "#") (ultimo-id-experiencia-ficheiro ficheiro (obter-id-linha linha ultimo-id)))
+          (t (ultimo-id-experiencia-ficheiro ficheiro ultimo-id))
+    )
+  )
+)
+
+;; Função que obtém o id da linha
+(defun obter-id-linha (linha &optional (ultimo-id 0))
+  "Obtém o id da linha"
+  (let ((id (parse-integer (subseq linha 1) :junk-allowed t)))
+    (cond ((null id) ultimo-id)
+          (t id)
+    )
+  )
+)
 
 (inicializar)
