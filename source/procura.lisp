@@ -4,10 +4,9 @@
 
 ;;;; Algoritmo de procura em largura e profundidade (BFS e DFS) e A*
 
-; TODO: Possívelmente mudar a parte dos nós para o ficheiro puzzle.lisp
-
 ;;; Construtor
 
+;TODO: Comprimir o nó para o nó pai guardar apenas o movimento e o valor da posição de destino
 ;; Cria um nó com o tabuleiro, o custo e o nó pai
 (defun cria-no (tabuleiro &optional (g 0) (h 0) (pai nil) (pontuacao 0))
   "Cria um nó com o tabuleiro, o custo e o nó pai"
