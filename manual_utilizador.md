@@ -22,7 +22,7 @@ As regras de funcionamento adotadas para este problema específico são as segui
 
 * Cada vez que uma casa é visitada, o valor da mesma é somado à pontuação do jogador; a remoção de simétricos e "duplos" não tem pontuação associada;
 
-* O jogador apenas pode fazer 8 jogadas e define uma pontuação objetivo a atingir;
+* O jogador apenas pode efetuar 8 movimentos por jogada e define uma pontuação objetivo a atingir antes de iniciar o jogo;
 
 * O estado final é atingido quando o cavalo chega a uma casa que lhe permite obter uma pontuação igual ou superior ao objetivo definido;
 
@@ -36,4 +36,8 @@ As regras de funcionamento adotadas para este problema específico são as segui
 
 ### 3. Informação necessária e produzida - *Input* e *Output* (ecrã/teclado e ficheiros)
 
+
+
 ### 4. Limitações do programa (do ponto de vista do utilizador)
+
+
