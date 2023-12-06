@@ -79,7 +79,7 @@
   "Lê as linhas do ficheiro de problemas"
   (let ((linha (read-line stream nil)))
     (cond ((null linha) nil)
-          ((equal linha (concatenate 'string "*" (write-to-string n))) (ler-propriedades-problema stream))
+          ((equal linha (concatenate 'string "#" (write-to-string n))) (ler-propriedades-problema stream))
           (t (ler-ficheiro-problemas stream n ))
     )
   )
@@ -92,7 +92,7 @@
   (let ((linha (read-line stream nil)))
     (cond ((null linha) (list nome (read-from-string tabuleiro) objetivo))          
           ((equal linha "") (ler-propriedades-problema stream nome tabuleiro objetivo))
-          ((equal (subseq linha 0 1) "*") (list nome (read-from-string tabuleiro) objetivo))
+          ((equal (subseq linha 0 1) "#") (list nome (read-from-string tabuleiro) objetivo))
           ((null nome) (ler-propriedades-problema stream linha tabuleiro objetivo))
           ((equal (subseq linha 0 3) "Obj") (ler-propriedades-problema stream nome tabuleiro (parse-integer (subseq linha 10))))
           (t (ler-propriedades-problema stream nome (concatenate 'string tabuleiro linha) objetivo))
@@ -126,7 +126,7 @@
 
 ;; Função que executa a experiência/resolução do problema fornecido
 ;; e escreve no output fornecido
-(defun executar-experiencia (problema &optional (output t) (max-profundidade 8))
+(defun executar-experiencia (problema &optional (output t) (max-profundidade 10))
     "Executa a experiencia/resolução do problema fornecido"
     (format output "~a~%" (first problema))
     (escreve-tabuleiro-formatado (second problema) output t t)
@@ -139,7 +139,7 @@
 )
 
 ;; Função que executa o algoritmo de procura fornecido no problema fornecido
-(defun executar-algoritmo-problema (problema algoritmo &optional (output t) (max-profundidade 8))
+(defun executar-algoritmo-problema (problema algoritmo &optional (output t) (max-profundidade 15))
   "Executa o algoritmo de procura fornecido no problema fornecido"
   (let* ((tempo-inicial (get-internal-real-time))
            (resultado (funcall algoritmo (cria-no (problema-tabuleiro problema)) (lambda-objetivo (problema-objetivo problema)) 'sucessores (operadores) max-profundidade))
@@ -213,7 +213,7 @@
 (defun escreve-estados-resultado (no &optional (output t))
   "Escreve os passos do caminho no output fornecido"
   (cond ((null no) nil)
-        (t (progn (escreve-estados-resultado (no-pai no)) (escreve-tabuleiro-formatado (no-estado no) output t t) (format output "~%")))
+        (t (progn (escreve-estados-resultado (no-pai no) output) (escreve-tabuleiro-formatado (no-estado no) output t t) (format output "~%")))
   )
 )
 
