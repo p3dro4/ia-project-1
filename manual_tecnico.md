@@ -191,16 +191,46 @@
 
 ### 2. Descrição dos objetos que compõem o projeto, incluindo dados e procedimentos
 
+#### Dados
+
 * Nó - Objeto base do projeto; Consiste numa lista que contém o tabuleiro, o custo e o nó pai (antecessor); Neste contexto, é o estado atual do jogo;
 
 * Operador - Consiste numa operação a aplicar a um nó; Neste contexto está relacionado com uma operação intermédia necessária para chegar ao estado pretendido, associado à jogada efetuada;
 
-* Sucessores - Consiste numa lista com os nós sucessores de um determinado nó, após a aplicação de um operador; Neste contexto, diz respeito a todas as casas disponíveis para a jogada seguinte;
+* Sucessores - Consiste numa lista que contém os nós sucessores de um determinado nó, após a aplicação de um operador; Neste contexto, diz respeito a todas as casas disponíveis para a jogada seguinte;
+
+* Lista de abertos - Consiste numa lista que contém os nós que ainda não foram explorados;
+
+* Lista de fechados - Consiste numa lista que contém os nós que já foram explorados;
+
+* Solução - Consiste numa lista que contém os nós que compõem a solução (caminho com os nós) para o problema.
+
+#### Procedimentos
+
+* Aplicar operador aos nós sucessores do nó atual, que se encontram na lista de abertos, expandindo-os;
+
+* Colocar nó expandido na lista de fechados, verificando se algum dos nós que se encontram nessa lista é solução;
+
+* Repetir os dois passos acima até à lista de abertos estar vazia;
+
+* O programa termina quando encontrar a solução, ou quando a lista de abertos estiver vazia, encontrando ou não a solução.
 
 ### 3. Limitações e opções técnicas
 
+
+
 ### 4. Análise critica dos resultados das execuções do programa, onde deverá transparecer a compreensão das limitações do projeto
+
+
 
 ### 5. Análise comparativa do conjunto de execuções do programa para cada algoritmo e cada problema, permitindo verificar o desempenho de cada algoritmo e das heurísticas
 
-### 6. Lista dos requisitos do projeto (listados neste documento) que não foram implementados
+| Algoritmo | Problema | Nós gerados | Encontrou solução? | Resto das estatísticas |
+| :-------: | :------: | :---------: | :----------------: | :--------------------: |
+| DFS       |          |             |                    |                        |
+| BFS       |          |             |                    |                        |
+| A*        |          |             |                    |                        |
+
+### 6. Lista dos requisitos do projeto (listados no enunciado) que não foram implementados
+
+
