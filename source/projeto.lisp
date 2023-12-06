@@ -102,7 +102,7 @@
 
 ;; Função que escreve a experiência/resolução do problema fornecido
 ;; no output fornecido (por default escreve no ficheiro experiencias.txt)
-(defun escreve-experiencia (problema &optional (output (experiencias-txt)))
+(defun escreve-experiencia (problema &optional (output (experiencias-txt)) (max-profundidade 15))
   "Executa a experiencia/resolução do problema fornecido e escreve no ficheiro experiencias.txt"
   (let ((ultimo-id (ultimo-id-experiencia)))
     (cond ((pathnamep output) 
@@ -110,29 +110,30 @@
             (escreve-conteudo-experiencia problema ficheiro ultimo-id)
             (close ficheiro)
           ))
-          (t (escreve-conteudo-experiencia problema output))
+          (t (escreve-conteudo-experiencia problema output 0 max-profundidade))
     )
   )
 )
 
 ;; Função auxiliar que escreve o conteúdo da experiência/resolução do problema fornecido
 ;; no output fornecido
-(defun escreve-conteudo-experiencia (problema output &optional (ultimo-id 0))
+(defun escreve-conteudo-experiencia (problema output &optional (ultimo-id 0) (max-profundidade 15))
   "Escreve o conteúdo da experiencia/resolução do problema fornecido no output fornecido"
+  (cond ((not (= ultimo-id 0)) (format output "---------------------------------------------~%")))
   (format output "#~a - ~a~%" (1+ ultimo-id) (escreve-tempo (get-universal-time)))
-  (executar-experiencia problema output)
-  (format output "~%------------------------------------------~%")
+  (executar-experiencia problema output max-profundidade)
 )
 
 ;; Função que executa a experiência/resolução do problema fornecido
 ;; e escreve no output fornecido
-(defun executar-experiencia (problema &optional (output t) (max-profundidade 10))
+; TODO: Alterar para enviar para uma lista os algoritmos
+(defun executar-experiencia (problema &optional (output t) (max-profundidade 15))
     "Executa a experiencia/resolução do problema fornecido"
     (format output "~a~%" (first problema))
     (escreve-tabuleiro-formatado (second problema) output t t)
     (format output "Objetivo: ~a~%" (third problema))
     (format output "~%*Algoritmos de procura*~%" )
-    (format output "--BFS--~%" )
+    (format output "~%--BFS--~%" )
     (executar-algoritmo-problema problema 'bfs output)
     (format output "~%--DFS--~%" )
     (executar-algoritmo-problema problema 'dfs output max-profundidade)
@@ -147,7 +148,6 @@
           )
       (progn (format output "Solucao: ") (cond ((not (null (resultado-no resultado))) (escreve-caminho (no-caminho (resultado-no resultado)) output)) (t (format output "**SEM SOLUCAO**"))))
       (format output "~%Pontuacao: ~a~%" (cond ((not (null (no-pontuacao (resultado-no resultado)))) (no-pontuacao (resultado-no resultado))) (t "**SEM SOLUCAO**")))
-      (format output "Max. Pontuacao: ~a~%" (no-pontuacao (resultado-no-max-pontuacao resultado)))
       (format output "Nos expandidos: ~a~%" (resultado-nos-expandidos resultado))
       (format output "Nos gerados: ~a~%" (resultado-nos-gerados resultado))
       (format output "Tempo de execucao: ~,6f seg.~%" (/ tempo-de-execucao internal-time-units-per-second))
@@ -190,12 +190,6 @@
 (defun resultado-nos-gerados (resultado)
   "Seleciona o número de nós gerados do resultado"
   (third resultado)
-)
-
-;; Função que seleciona o nó com a pontuacao máxima do resultado
-(defun resultado-no-max-pontuacao (resultado)
-  "Seleciona o nó com a pontuacao máxima do resultado"
-  (fourth resultado)
 )
 
 ;; Funções Auxiliares

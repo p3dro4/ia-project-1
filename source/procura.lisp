@@ -6,11 +6,10 @@
 
 ;;; Construtor
 
-;TODO: Comprimir o nó para o nó pai guardar apenas o movimento e o valor da posição de destino
 ;; Cria um nó com o tabuleiro, o custo e o nó pai
 (defun cria-no (tabuleiro &optional (g 0) (h 0) (pai nil) (pontuacao 0))
   "Cria um nó com o tabuleiro, o custo e o nó pai"
-  (list tabuleiro (+ g h) g h pai pontuacao)
+  (list tabuleiro g h pai pontuacao)
 )
 
 ;;; Seletores
@@ -24,31 +23,31 @@
 ;; Retorna o custo total do nó dado como argumento
 (defun no-custo (no)
   "Retorna o custo total do nó dado como argumento"
-  (second no)
+  (+ (no-profundidade no) (no-heuristica no))
 )
 
 ;; Retorna o custo do nó dado como argumento
 (defun no-profundidade (no)
   "Retorna o custo do nó dado como argumento"
-  (third no)
+  (second no)
 )
 
 ;; Retorna a heurística do nó dado como argumento
 (defun no-heuristica (no)
   "Retorna a heurística do nó dado como argumento"
-  (fourth no)
+  (third no)
 )
 
 ;; Retorna o nó pai do nó dado como argumento
 (defun no-pai (no)
   "Retorna o nó pai do nó dado como argumento"
-  (fifth no)
+  (fourth no)
 )
 
 ;; Retorna a pontuação do nó dado como argumento
 (defun no-pontuacao (no)
   "Retorna a pontuação do nó dado como argumento"
-  (sixth no)
+  (fifth no)
 )
 
 ;; Função que retorna as posições percorridas pelo cavalo
@@ -97,8 +96,7 @@
 (defun sucessores (no operadores algoritmo &optional lista-sucessores (profundidade-max 0))
   "Função que retorna a lista de sucessores de um nó"
   (cond ((null no) nil)
-        ((>= (no-profundidade no) 8) nil) ; Máximo de 8 movimentos
-        ((and (equal algoritmo 'dfs) (>= (no-profundidade no) profundidade-max)) nil)
+        ((and (equal algoritmo 'dfs) (> (no-profundidade no) profundidade-max)) nil)
         (t (apply #'append (mapcar (lambda (op) 
               (let ((sucessor (novo-sucessor no op)))
                     (cond ((null sucessor) nil)
@@ -197,7 +195,7 @@
 )
 
 ;; Função auxiliar que implementa o algoritmo de procura em largura
-(defun bfs-loop (no-inicial objetivop funcao-sucessore operadores &optional (nos-expandidos 0) (nos-gerados 0) abertos fechados no-max-pontos)
+(defun bfs-loop (no-inicial objetivop funcao-sucessore operadores &optional (nos-expandidos 0) (nos-gerados 0) abertos fechados)
   "Função auxiliar para o algoritmo de procura em largura"
          ; Gera a lista de nós sucessores, gerados pelo nó passado como argumento, através dos operadores
   (let* ((sucessores-gerados (funcall funcao-sucessore no-inicial operadores 'bfs fechados))
@@ -208,17 +206,16 @@
         )
         (let ((nos-expandidos-novo (1+ nos-expandidos))
               (nos-gerados-novo (+ nos-gerados (length sucessores-gerados)))
-              (no-max (compara-nos no-inicial no-max-pontos))
              )
           (cond 
             ; Verifica se o nó inicial é solução, se for retorna-o
-            ((funcall objetivop no-inicial) (list no-inicial nos-expandidos-novo nos-gerados no-max))
+            ((funcall objetivop no-inicial) (list no-inicial nos-expandidos-novo nos-gerados))
             ; Verifica se a lista de nós abertos é nula, se for retorna NIL
-            ((null abertos-novo) (list nil nos-expandidos-novo nos-gerados-novo no-max))
+            ((null abertos-novo) (list nil nos-expandidos-novo nos-gerados-novo))
             ; Verifica se a lista de nós solução não é nula, se não for retorna o 1º nó da lista
-            ((not (null (car solucao))) (list (car solucao) nos-expandidos-novo nos-gerados-novo (car solucao)))
+            ((not (null (car solucao))) (list (car solucao) nos-expandidos-novo nos-gerados-novo))
             ; Aplica recursividade para continuar a procurar
-            (t (bfs-loop (car abertos-novo) objetivop funcao-sucessore operadores nos-expandidos-novo nos-gerados-novo (cdr abertos-novo) (append fechados (list no-inicial)) no-max))
+            (t (bfs-loop (car abertos-novo) objetivop funcao-sucessore operadores nos-expandidos-novo nos-gerados-novo (cdr abertos-novo) (append fechados (list no-inicial))))
           )
         )
   )
@@ -239,7 +236,7 @@
 )
 
 ;; Função auxiliar que implementa o algoritmo de procura em profundidade
-(defun dfs-loop (no-inicial objetivop funcao-sucessores operadores profundidade-max &optional (nos-expandidos 0) (nos-gerados 0) abertos fechados no-max-pontos)
+(defun dfs-loop (no-inicial objetivop funcao-sucessores operadores profundidade-max &optional (nos-expandidos 0) (nos-gerados 0) abertos fechados)
   "Função auxiliar para o algoritmo de procura em profundidade"
          ; Lista de nós abertos juntamente com os nós fechados
   (let* ((abertos-fechados (append abertos fechados))
@@ -252,17 +249,16 @@
         )
         (let ((nos-expandidos-novo (1+ nos-expandidos))
               (nos-gerados-novo (+ nos-gerados (length sucessores-gerados)))
-              (no-max (compara-nos no-inicial no-max-pontos))
              )
           (cond 
             ; Verifica se o nó inicial é solução, se for retorna-o
-            ((funcall objetivop no-inicial) (list no-inicial nos-expandidos-novo nos-gerados no-max))
+            ((funcall objetivop no-inicial) (list no-inicial nos-expandidos-novo nos-gerados))
             ; Verifica se a lista de nós abertos é nula, se for retorna NIL
-            ((null abertos-novo) (list nil nos-expandidos-novo nos-gerados-novo no-max))
+            ((null abertos-novo) (list nil nos-expandidos-novo nos-gerados-novo))
             ; Verifica se a lista de nós solução não é nula, se não for retorna o 1º nó da lista
-            ((not (null (car solucao))) (list (car solucao) nos-expandidos-novo nos-gerados-novo (car solucao)))
+            ((not (null (car solucao))) (list (car solucao) nos-expandidos-novo nos-gerados-novo))
             ; Aplica recursividade para continuar a procurar
-            (t (dfs-loop (car abertos-novo) objetivop funcao-sucessores operadores profundidade-max nos-expandidos-novo nos-gerados-novo (cdr abertos-novo) (append fechados (list no-inicial)) no-max))
+            (t (dfs-loop (car abertos-novo) objetivop funcao-sucessores operadores profundidade-max nos-expandidos-novo nos-gerados-novo (cdr abertos-novo) (append fechados (list no-inicial))))
           )
         )
   )
