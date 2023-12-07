@@ -59,6 +59,14 @@
   )
 )
 
+;; Função que limpa o ficheiro experiencias
+(defun limpar-experiencias ()
+  "Limpa o ficheiro experiencias"
+  (with-open-file (ficheiro (experiencias-txt) :direction :output :if-exists :supersede :if-does-not-exist :create)
+    (format ficheiro "")
+  )
+)
+
 ;;; Executar experiência 
 
 ;; Função que executa a experiência/resolução do problema fornecido
