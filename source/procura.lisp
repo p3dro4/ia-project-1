@@ -223,11 +223,20 @@
   )
 )
 
+;; Função que retorna a lista de nós com o custo menor que o valor dado
 (defun lista-nos-custo-menores-que (lista-nos valor)
   "Função que retorna a lista de nós com o custo menor que o valor dado"
   (cond ((null lista-nos) nil)
         ((>= (no-custo (car lista-nos)) valor) (lista-nos-custo-menores-que (cdr lista-nos) valor))
         (t (cons (car lista-nos) (lista-nos-custo-menores-que (cdr lista-nos) valor)))
+  )
+)
+
+(defun lista-contem-no (lista no)
+  "Função que verifica se um nó existe numa lista de nós"
+  (cond ((null lista) nil)
+        ((equal no (car lista)) t)
+        (t (lista-contem-no (cdr lista) no))
   )
 )
 
@@ -363,9 +372,13 @@
          (solucao (list (apply #'append (mapcar (lambda (suc) (cond ((funcall (objetivo-funcao objetivo) suc) suc))) sucessores-heuristica))))
          ; Gera a lista de nós abertos com os nós sucessores (que não constam na lista de nós abertos) adicionados
          (abertos-novo (ordena-nos-custo (append abertos sucessores-heuristica)))
-         ; Ordena a lista de aberrtos por ordem crescente de custo
-         (menor-custo (no-custo (no-menor-custo (append abertos-novo (remover-se (lambda (no) (null (no-pai no))) fechados))))))
-        (format t "Menor custo: ~5,5f~%" menor-custo)
+         
+         (fechados-sem-no-inicial (remover-se (lambda (no) (null (no-pai no))) fechados))
+         
+         (menor-custo (no-custo (no-menor-custo (append abertos-novo fechados-sem-no-inicial))))
+         
+         (fechados-menor-custo (lista-nos-custo-menores-que fechados-sem-no-inicial menor-custo)))
+         ; TODO: criar lista abertos + fechados e remover fechado de abertos
         (let ((nos-expandidos-novo (1+ nos-expandidos))
               (nos-gerados-novo (+ nos-gerados (length sucessores-gerados))))
           (cond 
@@ -383,7 +396,7 @@
 )
 
 (defun aestrela-teste ()
-  (aestrela (cria-no (tabuleiro-teste)) (cria-objetivo 2000) 'sucessores 'heuristica-base (operadores))
+  (aestrela (cria-no (tabuleiro-aleatorio)) (cria-objetivo 2000) 'sucessores 'heuristica-base (operadores))
 )
 
 ;;; Medidas de desempenho
