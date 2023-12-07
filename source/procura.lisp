@@ -98,7 +98,7 @@
 (defun sucessores (no operadores algoritmo &optional lista-sucessores (profundidade-max 0))
   "Função que retorna a lista de sucessores de um nó"
   (cond ((null no) nil)
-        ((and (equal algoritmo 'dfs) (> (no-profundidade no) profundidade-max)) nil)
+        ((and (equal algoritmo 'dfs) (>= (no-profundidade no) profundidade-max)) nil)
         (t (apply #'append (mapcar (lambda (op) 
               (let ((sucessor (novo-sucessor no op)))
                     (cond ((null sucessor) nil)
