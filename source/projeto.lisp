@@ -64,6 +64,7 @@
   "Limpa o ficheiro experiencias"
   (with-open-file (ficheiro (experiencias-txt) :direction :output :if-exists :supersede :if-does-not-exist :create)
     (format ficheiro "")
+    (close ficheiro)
   )
 )
 
@@ -84,7 +85,7 @@
   "Executa o algoritmo de procura fornecido no problema fornecido"
   (cond ((null problema) nil)
         (t (let* ((tempo-inicial (get-internal-real-time))
-                  (resultado (funcall algoritmo (cria-no (problema-tabuleiro problema)) (lambda-objetivo (problema-objetivo problema)) 'sucessores (operadores) max-profundidade))
+                  (resultado (funcall algoritmo (cria-no (problema-tabuleiro problema)) (cria-objetivo (problema-objetivo problema)) 'sucessores (operadores) max-profundidade))
                   (tempo-de-execucao (- (get-internal-real-time) tempo-inicial)))
             (append resultado (list (/ tempo-de-execucao internal-time-units-per-second)))
           )
@@ -252,7 +253,7 @@
 (defun escreve-estados-resultado (no &optional (saida t))
   "Escreve os passos do caminho no saida fornecido"
   (cond ((null no) nil)
-        (t (progn (escreve-estados-resultado (no-pai no) saida) (escreve-tabuleiro-formatado (no-estado no) saida t t) (format saida "~%")))
+        (t (progn (escreve-estados-resultado (no-pai no) saida) (escreve-tabuleiro-formatado (no-estado no) saida) (format saida "~%")))
   )
 )
 
@@ -288,7 +289,7 @@
   (format saida "~45,1,,'.:@< Inicio experiencia ~>~%")
   (cond ((streamp saida) (format saida "#~a - ~a~%" (1+ ultimo-id) (escreve-tempo (get-universal-time)))))
   (format saida "~45,1,,'=:@< ~a ~>~%" (problema-nome (experiencia-problema experiencia)))
-  (escreve-tabuleiro-formatado (problema-tabuleiro (experiencia-problema experiencia)) saida t t)
+  (escreve-tabuleiro-formatado (problema-tabuleiro (experiencia-problema experiencia)) saida)
   (format saida "Objetivo: ~a~%" (problema-objetivo (experiencia-problema experiencia)))
   (format saida "~45,1,,'~:@< Algoritmos de procura ~>~%")
   (format saida "~45,1,,'-:@< BFS ~>~%" )

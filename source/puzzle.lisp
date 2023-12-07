@@ -2,6 +2,7 @@
 ;;;; Código relacionado com o problema.   
 ;;;; Autores: 202100230 - Pedro Anjos, 202100225 - André Meseiro
 
+; TODO: Rever comentérios
 
 ;;; Tabuleiros
 
@@ -143,13 +144,20 @@
 (defun maior-numero-tabuleiro (tabuleiro)
   "Retorna o maior número do tabuleiro"
   (cond ((null tabuleiro) nil)
-        (t (let ((tabuleiro-numeros (remover-se (lambda (num) (or (eq num t) (null num))) (juntar-linhas tabuleiro))))
+        (t (let ((tabuleiro-numeros (numeros-tabuleiro tabuleiro)))
             (cond ((null tabuleiro-numeros) nil)
                   (t (apply 'max tabuleiro-numeros))
             )
            )
         )
   )
+)
+
+;; Função que retorna todos os números de um tabuleiro numa lista.
+;; teste: (numeros-tabuleiro (tabuleiro-jogado))
+;; resultado: tabuleiro com os símbolos nil e t removidos
+(defun numeros-tabuleiro (tabuleiro)
+  (remover-se (lambda (num) (or (eq num t) (null num))) (juntar-linhas tabuleiro))
 )
 
 ;; Função auxiliar que recebe um tabuleiro e retorna uma lista com todas as linhas do tabuleiro juntas.
@@ -404,7 +412,7 @@
 )
 
 ;; Função que recebe um tabuleiro e escreve-o no saida formatado.
-(defun escreve-tabuleiro-formatado (tabuleiro &optional (saida t) numero-linha letra-coluna (preenchimento-esquerda 0) (i 0))
+(defun escreve-tabuleiro-formatado (tabuleiro &optional (saida t) (numero-linha t) (letra-coluna t) (preenchimento-esquerda 0) (i 0))
   "Escreve o tabuleiro no ecrã formatado"
   (cond (letra-coluna (progn (cond (numero-linha (format saida "   "))) 
                                 (cond ((> preenchimento-esquerda 0) (format t "~v,a" preenchimento-esquera " ")))
@@ -426,10 +434,6 @@
            )
         )
   )
-)
-
-(defun escreve-linha-formatada (linha-membros &optional (saida t))
-  ()
 )
 
 ;; Função que recebe uma posição e escreve-a no ecrã.
