@@ -143,7 +143,12 @@
 (defun maior-numero-tabuleiro (tabuleiro)
   "Retorna o maior número do tabuleiro"
   (cond ((null tabuleiro) nil)
-        (t (apply #'max (remover-se (lambda (num) (or (eq num t) (null num))) (juntar-linhas tabuleiro))))
+        (t (let ((tabuleiro-numeros (remover-se (lambda (num) (or (eq num t) (null num))) (juntar-linhas tabuleiro))))
+            (cond ((null tabuleiro-numeros) nil)
+                  (t (apply 'max tabuleiro-numeros))
+            )
+           )
+        )
   )
 )
 
@@ -390,44 +395,48 @@
 
 ;;; Escrita do tabuleiro
 
-;; Função que recebe um tabuleiro e escreve-o no output.
-(defun escreve-tabuleiro (tabuleiro &optional (output t))
+;; Função que recebe um tabuleiro e escreve-o no saida.
+(defun escreve-tabuleiro (tabuleiro &optional (saida t))
   "Escreve o tabuleiro no ecrã"
   (cond ((null tabuleiro) nil)
-        (t (progn (format output "~a~%" (car tabuleiro)) (escreve-tabuleiro (cdr tabuleiro) output)))
+        (t (progn (format saida "~a~%" (car tabuleiro)) (escreve-tabuleiro (cdr tabuleiro) saida)))
   )
 )
 
-;; Função que recebe um tabuleiro e escreve-o no output formatado.
-(defun escreve-tabuleiro-formatado (tabuleiro &optional (output t) numero-linha letra-coluna (i 0))
+;; Função que recebe um tabuleiro e escreve-o no saida formatado.
+(defun escreve-tabuleiro-formatado (tabuleiro &optional (saida t) numero-linha letra-coluna (preenchimento-esquerda 0) (i 0))
   "Escreve o tabuleiro no ecrã formatado"
-  (cond (letra-coluna (progn (cond (numero-linha (format output "   ")))(format output "   A   B   C   D   E   F   G   H   I   J~%") (escreve-tabuleiro-formatado tabuleiro output numero-linha nil i)))
+  (cond (letra-coluna (progn (cond (numero-linha (format saida "   "))) 
+                                (cond ((> preenchimento-esquerda 0) (format t "~v,a" preenchimento-esquera " ")))
+                                (format saida "   A   B   C   D   E   F   G   H   I   J~%") 
+                                (escreve-tabuleiro-formatado tabuleiro saida numero-linha nil preenchimento-esquerda i)))
         ((null tabuleiro) nil)
         ((>= i (length tabuleiro)) nil)
         (t (progn
-            (cond (numero-linha (format output "~2,'0d " (1+ i))))
-            (format output "|" )
+            (cond ((> preenchimento-esquerda 0) (format t "~v,a" preenchimento-esquera " ")))
+            (cond (numero-linha (format saida "~2,'0d " (1+ i))))
+            (format saida "|" )
             (mapcar (lambda (cel) (cond 
-              ((numberp cel) (format output " ~2,'0d " cel))
-              ((eq cel t) (format output " TT "))
-              (t (format output " .. "))
+              ((numberp cel) (format saida " ~2,'0d " cel))
+              ((eq cel t) (format saida " TT "))
+              (t (format saida " .. "))
             )) (linha i tabuleiro))
-            (format output "|~%")
-            (escreve-tabuleiro-formatado tabuleiro output numero-linha nil (1+ i))
+            (format saida "|~%")
+            (escreve-tabuleiro-formatado tabuleiro saida numero-linha nil preenchimento-esquerda (1+ i))
            )
         )
   )
 )
 
-(defun escreve-linha-formatada (linha-membros &optional (output t))
+(defun escreve-linha-formatada (linha-membros &optional (saida t))
   ()
 )
 
 ;; Função que recebe uma posição e escreve-a no ecrã.
-(defun escreve-posicao (posicao &optional (output t))
+(defun escreve-posicao (posicao &optional (saida t))
   "Escreve a posicao no ecrã"
   (cond ((null posicao) nil)
         ((not (= (length posicao) 2)) (error "A posição não tem 2 elementos"))
-        (t (format output "~a~a" (coluna-para-letra (second posicao)) (1+ (first posicao))))	
+        (t (format saida "~a~a" (coluna-para-letra (second posicao)) (1+ (first posicao))))	
   ) 
 )

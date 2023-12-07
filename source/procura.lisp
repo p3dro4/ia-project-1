@@ -2,6 +2,8 @@
 ;;;; Implementa os algoritmos de procura.
 ;;;; Autores: 202100230 - Pedro Anjos, 202100225 - André Meseiro
 
+; TODO: Rever comentérios
+
 ;;;; Algoritmo de procura em largura e profundidade (BFS e DFS) e A*
 
 ;;; Construtor
@@ -190,7 +192,7 @@
          )
         )
         ; Caso recursivo: executa a função normalmente, com recurso à função auxiliar
-        (t (bfs-loop no-inicial objetivop funcao-sucessores operadores (length fechados) (+ (length abertos) (length fechados)) abertos fechados))
+        (t (bfs-loop no-inicial objetivop funcao-sucessores operadores (length fechados) (1+ (length abertos)) abertos fechados))
   )
 )
 
@@ -209,11 +211,11 @@
              )
           (cond 
             ; Verifica se o nó inicial é solução, se for retorna-o
-            ((funcall objetivop no-inicial) (list no-inicial nos-expandidos-novo nos-gerados))
+            ((funcall objetivop no-inicial) (list no-inicial nos-expandidos-novo nos-gerados (penetrancia no-inicial nos-gerados) 0))
             ; Verifica se a lista de nós abertos é nula, se for retorna NIL
-            ((null abertos-novo) (list nil nos-expandidos-novo nos-gerados-novo))
+            ((null abertos-novo) (list nil nos-expandidos-novo nos-gerados-novo 0 0))
             ; Verifica se a lista de nós solução não é nula, se não for retorna o 1º nó da lista
-            ((not (null (car solucao))) (list (car solucao) nos-expandidos-novo nos-gerados-novo))
+            ((not (null (car solucao))) (list (car solucao) nos-expandidos-novo nos-gerados-novo (penetrancia (car solucao) nos-gerados-novo) 0))
             ; Aplica recursividade para continuar a procurar
             (t (bfs-loop (car abertos-novo) objetivop funcao-sucessore operadores nos-expandidos-novo nos-gerados-novo (cdr abertos-novo) (append fechados (list no-inicial))))
           )
@@ -231,7 +233,7 @@
          )
         )
         ; Caso recursivo: executa a função normalmente, com recurso à função auxiliar
-        (t (dfs-loop no-inicial objetivop funcao-sucessores operadores profundidade-max (length fechados) (+ (length abertos) (length fechados)) abertos fechados))
+        (t (dfs-loop no-inicial objetivop funcao-sucessores operadores profundidade-max (length fechados) (1+ (length abertos)) abertos fechados))
   )
 )
 
@@ -252,11 +254,11 @@
              )
           (cond 
             ; Verifica se o nó inicial é solução, se for retorna-o
-            ((funcall objetivop no-inicial) (list no-inicial nos-expandidos-novo nos-gerados))
+            ((funcall objetivop no-inicial) (list no-inicial nos-expandidos-novo nos-gerados (penetrancia no-inicial nos-gerados) 0))
             ; Verifica se a lista de nós abertos é nula, se for retorna NIL
-            ((null abertos-novo) (list nil nos-expandidos-novo nos-gerados-novo))
+            ((null abertos-novo) (list nil nos-expandidos-novo nos-gerados-novo 0 0))
             ; Verifica se a lista de nós solução não é nula, se não for retorna o 1º nó da lista
-            ((not (null (car solucao))) (list (car solucao) nos-expandidos-novo nos-gerados-novo))
+            ((not (null (car solucao))) (list (car solucao) nos-expandidos-novo nos-gerados-novo (penetrancia (car solucao) nos-gerados-novo) 0))
             ; Aplica recursividade para continuar a procurar
             (t (dfs-loop (car abertos-novo) objetivop funcao-sucessores operadores profundidade-max nos-expandidos-novo nos-gerados-novo (cdr abertos-novo) (append fechados (list no-inicial))))
           )
@@ -264,13 +266,23 @@
   )
 )
 
+;;; Medidas de desempenho
+
+;; Função que calcula a penetrância do resultado
+(defun penetrancia (no nos-gerados)
+  "Calcula a penetrância do resultado"
+  (/ (no-profundidade no) nos-gerados)
+)
+
+
 ;;; Escrita de soluções
 
 ;; Função que escreve o caminho percorrido
-(defun escreve-caminho (caminho &optional (output t))
+(defun escreve-caminho (caminho &optional (saida t) enrolar (i 0))
   "Função que escreve o caminho percorrido"
   (cond ((null caminho) nil)
-        ((= (length caminho) 1) (escreve-posicao (car caminho) output))
-        (t (progn (escreve-posicao (car caminho) output) (format output "->") (escreve-caminho (cdr caminho) output)))     
+        ((and enrolar (= i 9)) (progn (format saida "~%~9<~>") (escreve-caminho caminho saida enrolar 0)))
+        ((= (length caminho) 1) (escreve-posicao (car caminho) saida))
+        (t (progn (escreve-posicao (car caminho) saida) (format saida "->") (escreve-caminho (cdr caminho) saida enrolar (1+ i))))     
   )
 )

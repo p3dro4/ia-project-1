@@ -2,6 +2,10 @@
 ;;;; Carrega os outros ficheiros de código, escreve e lê ficheiros, e trata da interação com o utilizador.
 ;;;; Autores: 202100230 - Pedro Anjos, 202100225 - André Meseiro
 
+; TODO: Rever comentérios
+
+;;; Carregar ficheiros de código e definir funções necessárias
+
 ;; Função que inicializa o programa
 (defun inicializar ()
   "Inicializa o programa"
@@ -55,103 +59,29 @@
   )
 )
 
-;; Função que lê o ficheiro de problemas e devolve uma lista com todos os problemas
-(defun ler-todos-problemas (&optional (i 0) problemas (ficheiro (problemas-dat)))
-  "Lê todos os problemas"
-  (let ((problema (ler-problema i ficheiro)))
-    (cond ((null problema) problemas)
-          (t (ler-todos-problemas (+ i 1) (append problemas (list problema)) ficheiro))
-    )
-  )
-)
-
-;; Função que lê o ficheiro de problemas e devolve o problema n
-(defun ler-problema (n &optional (ficheiro (problemas-dat)))
-  "Lê o ficheiro de problemas e devolve o problema n"
-  (with-open-file (stream ficheiro :direction :input :if-does-not-exist nil)
-    (ler-ficheiro-problemas stream n)
-  )
-)
-
-;; Função que lê as linhas do ficheiro de problemas e se encontrar o problema n
-;; chama a função ler-propriedades-problema
-(defun ler-ficheiro-problemas (stream n)
-  "Lê as linhas do ficheiro de problemas"
-  (let ((linha (read-line stream nil)))
-    (cond ((null linha) nil)
-          ((equal linha (concatenate 'string "#" (write-to-string n))) (ler-propriedades-problema stream))
-          (t (ler-ficheiro-problemas stream n ))
-    )
-  )
-)
-
-;; Função que lê as propriedades do problema e devolve uma lista com o nome,
-;; o tabuleiro e o objetivo
-(defun ler-propriedades-problema (stream &optional nome (tabuleiro "") (objetivo 0))
-  "Lê as propriedades do problema"
-  (let ((linha (read-line stream nil)))
-    (cond ((null linha) (list nome (read-from-string tabuleiro) objetivo))          
-          ((equal linha "") (ler-propriedades-problema stream nome tabuleiro objetivo))
-          ((equal (subseq linha 0 1) "#") (list nome (read-from-string tabuleiro) objetivo))
-          ((null nome) (ler-propriedades-problema stream linha tabuleiro objetivo))
-          ((equal (subseq linha 0 3) "Obj") (ler-propriedades-problema stream nome tabuleiro (parse-integer (subseq linha 10))))
-          (t (ler-propriedades-problema stream nome (concatenate 'string tabuleiro linha) objetivo))
-    )
-  )
-)
-
-;; Função que escreve a experiência/resolução do problema fornecido
-;; no output fornecido (por default escreve no ficheiro experiencias.txt)
-(defun escreve-experiencia (problema &optional (output (experiencias-txt)) (max-profundidade 15))
-  "Executa a experiencia/resolução do problema fornecido e escreve no ficheiro experiencias.txt"
-  (let ((ultimo-id (ultimo-id-experiencia)))
-    (cond ((pathnamep output) 
-          (with-open-file (ficheiro output :direction :output :if-exists :append :if-does-not-exist :create)
-            (escreve-conteudo-experiencia problema ficheiro ultimo-id)
-            (close ficheiro)
-          ))
-          (t (escreve-conteudo-experiencia problema output 0 max-profundidade))
-    )
-  )
-)
-
-;; Função auxiliar que escreve o conteúdo da experiência/resolução do problema fornecido
-;; no output fornecido
-(defun escreve-conteudo-experiencia (problema output &optional (ultimo-id 0) (max-profundidade 15))
-  "Escreve o conteúdo da experiencia/resolução do problema fornecido no output fornecido"
-  (cond ((not (= ultimo-id 0)) (format output "---------------------------------------------~%")))
-  (format output "#~a - ~a~%" (1+ ultimo-id) (escreve-tempo (get-universal-time)))
-  (executar-experiencia problema output max-profundidade)
-)
+;;; Executar experiência 
 
 ;; Função que executa a experiência/resolução do problema fornecido
-;; e escreve no output fornecido
-; TODO: Alterar para enviar para uma lista os algoritmos
-(defun executar-experiencia (problema &optional (output t) (max-profundidade 15))
+;; e escreve no saida fornecido
+(defun executar-experiencia (problema &optional (max-profundidade 15))
     "Executa a experiencia/resolução do problema fornecido"
-    (format output "~a~%" (first problema))
-    (escreve-tabuleiro-formatado (second problema) output t t)
-    (format output "Objetivo: ~a~%" (third problema))
-    (format output "~%*Algoritmos de procura*~%" )
-    (format output "~%--BFS--~%" )
-    (executar-algoritmo-problema problema 'bfs output)
-    (format output "~%--DFS--~%" )
-    (executar-algoritmo-problema problema 'dfs output max-profundidade)
+    (let ((resultado-bfs (executar-algoritmo-problema problema 'bfs))
+          (resultado-dfs (executar-algoritmo-problema problema 'dfs max-profundidade)))
+      (list problema resultado-bfs resultado-dfs)
+    )
 )
 
 ;; Função que executa o algoritmo de procura fornecido no problema fornecido
-(defun executar-algoritmo-problema (problema algoritmo &optional (output t) (max-profundidade 15))
+(defun executar-algoritmo-problema (problema algoritmo &optional (max-profundidade 15))
   "Executa o algoritmo de procura fornecido no problema fornecido"
-  (let* ((tempo-inicial (get-internal-real-time))
-           (resultado (funcall algoritmo (cria-no (problema-tabuleiro problema)) (lambda-objetivo (problema-objetivo problema)) 'sucessores (operadores) max-profundidade))
-           (tempo-de-execucao (- (get-internal-real-time) tempo-inicial))
+  (cond ((null problema) nil)
+        (t (let* ((tempo-inicial (get-internal-real-time))
+                  (resultado (funcall algoritmo (cria-no (problema-tabuleiro problema)) (lambda-objetivo (problema-objetivo problema)) 'sucessores (operadores) max-profundidade))
+                  (tempo-de-execucao (- (get-internal-real-time) tempo-inicial)))
+            (append resultado (list (/ tempo-de-execucao internal-time-units-per-second)))
           )
-      (progn (format output "Solucao: ") (cond ((not (null (resultado-no resultado))) (escreve-caminho (no-caminho (resultado-no resultado)) output)) (t (format output "**SEM SOLUCAO**"))))
-      (format output "~%Pontuacao: ~a~%" (cond ((not (null (no-pontuacao (resultado-no resultado)))) (no-pontuacao (resultado-no resultado))) (t "**SEM SOLUCAO**")))
-      (format output "Nos expandidos: ~a~%" (resultado-nos-expandidos resultado))
-      (format output "Nos gerados: ~a~%" (resultado-nos-gerados resultado))
-      (format output "Tempo de execucao: ~,6f seg.~%" (/ tempo-de-execucao internal-time-units-per-second))
-    )
+        )
+  )
 )
 
 ;;; Seletores
@@ -180,36 +110,55 @@
   (first resultado)
 )
 
-;; Função que seleciona o nó com a pontuacao máxima do resultado
+;; Função que seleciona o número de nós expandidos do resultado	
 (defun resultado-nos-expandidos (resultado)
   "Seleciona o número de nós expandidos do resultado"
   (second resultado)
 )
 
-;; Função que seleciona o nó com a pontuacao máxima do resultado
+;; Função que seleciona o número de nós gerados do resultado
 (defun resultado-nos-gerados (resultado)
   "Seleciona o número de nós gerados do resultado"
   (third resultado)
 )
 
+;; Função que seleciona a penetrância do resultado
+(defun resultado-penetrancia (resultado)
+  "Seleciona a penetrância do resultado"
+  (fourth resultado)
+)
+
+;; Função que seleciona o factor de ramificação média do resultado
+(defun resultado-ramificacao-media (resultado)
+  "Seleciona o factor de ramificação média do resultado"
+  (fifth resultado)
+)
+
+;; Função que seleciona o tempo de execução do resultado
+(defun resultado-tempo-execucao (resultado)
+  "Seleciona o tempo de execução do resultado"
+  (sixth resultado)
+)
+
+;; Função que seleciona o problema da experiência
+(defun experiencia-problema (experiencia)
+  "Seleciona o problema da experiência"
+  (first experiencia)
+)
+
+;; Função que seleciona o resultado do BFS da experiência
+(defun experiencia-resultado-bfs (experiencia)
+  "Seleciona o resultado do BFS da experiência"
+  (second experiencia)
+)
+
+;; Função que seleciona o resultado do DFS da experiência
+(defun experiencia-resultado-dfs (experiencia)
+  "Seleciona o resultado do DFS da experiência"
+  (third experiencia)
+)
+
 ;; Funções Auxiliares
-
-;; Função que escreve o tempo no formato dd/mm/aaaa @ hh:mm:ss
-;; no output fornecido
-(defun escreve-tempo (tempo-universal &optional output)
-  "Escreve o tempo fornecido no formato dd/mm/aaaa @ hh:mm:ss"
-  (multiple-value-bind (segundos minutos horas dia mes ano) (decode-universal-time tempo-universal)
-    (format output "~2,'0d/~2,'0d/~2,'0d @ ~2,'0d:~2,'0d:~2,'0d" dia mes ano horas minutos segundos)
-  )
-)
-
-;; Função que escreve os passos do caminho no output fornecido
-(defun escreve-estados-resultado (no &optional (output t))
-  "Escreve os passos do caminho no output fornecido"
-  (cond ((null no) nil)
-        (t (progn (escreve-estados-resultado (no-pai no) output) (escreve-tabuleiro-formatado (no-estado no) output t t) (format output "~%")))
-  )
-)
 
 ;; Função que retorna o último id da experiência
 ;; do ficheiro experiencias.txt
@@ -242,4 +191,114 @@
   )
 )
 
-(inicializar)
+;;; Leitura
+
+;; Função que lê o ficheiro de problemas e devolve uma lista com todos os problemas
+(defun ler-todos-problemas (&optional (i 1) problemas (ficheiro (problemas-dat)))
+  "Lê todos os problemas"
+  (let ((problema (ler-problema i ficheiro)))
+    (cond ((null problema) problemas)
+          (t (ler-todos-problemas (+ i 1) (append problemas (list problema)) ficheiro))
+    )
+  )
+)
+
+;; Função que lê o ficheiro de problemas e devolve o problema n
+(defun ler-problema (n &optional (ficheiro (problemas-dat)))
+  "Lê o ficheiro de problemas e devolve o problema n"
+  (with-open-file (stream ficheiro :direction :input :if-does-not-exist nil)
+    (ler-ficheiro-problemas stream n)
+  )
+)
+
+;; Função que lê as linhas do ficheiro de problemas e se encontrar o problema n
+;; chama a função ler-propriedades-problema
+(defun ler-ficheiro-problemas (stream n)
+  "Lê as linhas do ficheiro de problemas"
+  (let ((linha (read-line stream nil)))
+    (cond ((null linha) nil)
+          ((equal linha (format nil "~a~a" "#" (write-to-string n))) (ler-propriedades-problema stream))
+          (t (ler-ficheiro-problemas stream n ))
+    )
+  )
+)
+
+;; Função que lê as propriedades do problema e devolve uma lista com o nome,
+;; o tabuleiro e o objetivo
+(defun ler-propriedades-problema (stream &optional (nome "**SEM NOME**") (tabuleiro "") (objetivo nil))
+  "Lê as propriedades do problema"
+  (let ((linha (read-line stream nil)))
+    (cond ((equal linha "") (ler-propriedades-problema stream nome tabuleiro objetivo))
+          ((null linha) (list nome (read-from-string tabuleiro) objetivo))
+          ((equal (subseq linha 0 1) "#") (list nome (read-from-string tabuleiro) objetivo))
+          ((equal (subseq linha 0 5) "Nome:") (ler-propriedades-problema stream (subseq linha 6) tabuleiro objetivo))
+          ((equal (subseq linha 0 9) "Objetivo:") (ler-propriedades-problema stream nome tabuleiro (parse-integer (subseq linha 10))))
+          (t (ler-propriedades-problema stream nome (format nil "~a~a" tabuleiro linha) objetivo))
+    )
+  )
+)
+
+;;; Escrita
+
+;; Função que escreve os passos do caminho no saida fornecido
+(defun escreve-estados-resultado (no &optional (saida t))
+  "Escreve os passos do caminho no saida fornecido"
+  (cond ((null no) nil)
+        (t (progn (escreve-estados-resultado (no-pai no) saida) (escreve-tabuleiro-formatado (no-estado no) saida t t) (format saida "~%")))
+  )
+)
+
+;; Função que escreve o tempo no formato dd/mm/aaaa @ hh:mm:ss
+;; no saida fornecido
+(defun escreve-tempo (tempo-universal &optional saida)
+  "Escreve o tempo fornecido no formato dd/mm/aaaa @ hh:mm:ss"
+  (multiple-value-bind (segundos minutos horas dia mes ano) (decode-universal-time tempo-universal)
+    (format saida "~2,'0d/~2,'0d/~2,'0d @ ~2,'0d:~2,'0d:~2,'0d" dia mes ano horas minutos segundos)
+  )
+)
+
+;; Função que escreve a experiência/resolução do problema fornecido
+;; no saida fornecido (por default escreve no ficheiro experiencias.txt)
+(defun escreve-experiencia (experiencia &optional (saida (experiencias-txt)))
+  "Executa a experiencia/resolução do problema fornecido e escreve no ficheiro experiencias.txt"
+  (let ((ultimo-id (ultimo-id-experiencia)))
+    (cond ((pathnamep saida) 
+          (with-open-file (ficheiro saida :direction :output :if-exists :append :if-does-not-exist :create)
+            (escreve-conteudo-experiencia experiencia ficheiro ultimo-id)
+            (close ficheiro)
+          ))
+          (t (escreve-conteudo-experiencia experiencia saida))
+    )
+  )
+)
+
+;; Função auxiliar que escreve o conteúdo da experiência/resolução do problema fornecido
+;; no saida fornecido
+(defun escreve-conteudo-experiencia (experiencia saida &optional (ultimo-id 0))
+  "Escreve o conteúdo da experiencia/resolução do problema fornecido no saida fornecido"
+  (cond ((not (= ultimo-id 0)) (format saida "~%~%")))
+  (format saida "~45,1,,'.:@< Inicio experiencia ~>~%")
+  (cond ((streamp saida) (format saida "#~a - ~a~%" (1+ ultimo-id) (escreve-tempo (get-universal-time)))))
+  (format saida "~45,1,,'=:@< ~a ~>~%" (problema-nome (experiencia-problema experiencia)))
+  (escreve-tabuleiro-formatado (problema-tabuleiro (experiencia-problema experiencia)) saida t t)
+  (format saida "Objetivo: ~a~%" (problema-objetivo (experiencia-problema experiencia)))
+  (format saida "~45,1,,'~:@< Algoritmos de procura ~>~%")
+  (format saida "~45,1,,'-:@< BFS ~>~%" )
+  (escreve-detalhes-resultado (experiencia-resultado-bfs experiencia) saida)
+  (format saida "~45,1,,'-:@< DFS ~>~%" )
+  (escreve-detalhes-resultado (experiencia-resultado-dfs experiencia) saida)
+  (format saida "~45,1,,'.:@< Fim experiencia ~>")
+)
+
+(defun escreve-detalhes-resultado (resultado saida)
+  "Escreve os detalhes do resultado"
+  (progn (format saida "Solucao: ") (cond ((not (null (resultado-no resultado))) (escreve-caminho (no-caminho (resultado-no resultado)) saida t)) (t (format saida "**SEM SOLUCAO**"))))
+  ;(format saida "~%Pontuacao: ~a~%" (cond ((not (null (no-pontuacao (resultado-no resultado)))) (no-pontuacao (resultado-no resultado))) (t "**SEM SOLUCAO**")))
+  (format saida "~%Nos expandidos: ~a~%" (resultado-nos-expandidos resultado))
+  (format saida "Nos gerados: ~a~%" (resultado-nos-gerados resultado))
+  (format saida "Penetrancia: ~,3f (~,1f%)~%" (resultado-penetrancia resultado) (* 100 (resultado-penetrancia resultado)))
+  (format saida "Factor de ramificacao media: ~,3f (~,1f%)~%" (resultado-ramificacao-media resultado) (* 100 (resultado-ramificacao-media resultado)))
+  (format saida "Tempo de execucao: ~,6f seg.~%" (resultado-tempo-execucao resultado))
+)
+
+(inicializar) ; Inicializa o programa automaticamente
