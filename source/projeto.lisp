@@ -301,4 +301,14 @@
   (format saida "Tempo de execucao: ~,6f seg.~%" (resultado-tempo-execucao resultado))
 )
 
+;; Função que escreve o caminho percorrido
+(defun escreve-caminho (caminho &optional (saida t) enrolar (i 0))
+  "Função que escreve o caminho percorrido"
+  (cond ((null caminho) nil)
+        ((and enrolar (= i 9)) (progn (format saida "~%~9<~>") (escreve-caminho caminho saida enrolar 0)))
+        ((= (length caminho) 1) (escreve-posicao (car caminho) saida))
+        (t (progn (escreve-posicao (car caminho) saida) (format saida "->") (escreve-caminho (cdr caminho) saida enrolar (1+ i))))     
+  )
+)
+
 (inicializar) ; Inicializa o programa automaticamente

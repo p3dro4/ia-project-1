@@ -95,14 +95,13 @@
 )
 
 ;; Função que retorna a lista de sucessores de um nó
-(defun sucessores (no operadores algoritmo &optional lista-sucessores (profundidade-max 0))
+(defun sucessores (no operadores algoritmo &optional (profundidade-max 0))
   "Função que retorna a lista de sucessores de um nó"
   (cond ((null no) nil)
         ((and (equal algoritmo 'dfs) (>= (no-profundidade no) profundidade-max)) nil)
         (t (apply #'append (mapcar (lambda (op) 
               (let ((sucessor (novo-sucessor no op)))
                     (cond ((null sucessor) nil)
-                          ((no-existp sucessor lista-sucessores algoritmo) nil)
                           (t (list sucessor))
                     ))
               ) operadores))
@@ -180,6 +179,22 @@
   ) 
 )
 
+;; Função que retorna a média dos valores fornecidos
+(defun media (lista)
+  "Função que retorna a média dos valores fornecidos"
+  (/ (apply #'+ lista) (length lista))
+)
+
+;;; Heurísticas
+
+;; Função que representa uma heurística base
+(defun heuristica-base (no)
+  "Função que representa uma heurística base"
+
+)
+
+
+
 ;;; Algoritmos de procura
 
 ;; Algoritmo de procura em largura
@@ -200,7 +215,7 @@
 (defun bfs-loop (no-inicial objetivop funcao-sucessore operadores &optional (nos-expandidos 0) (nos-gerados 0) abertos fechados)
   "Função auxiliar para o algoritmo de procura em largura"
          ; Gera a lista de nós sucessores, gerados pelo nó passado como argumento, através dos operadores
-  (let* ((sucessores-gerados (funcall funcao-sucessore no-inicial operadores 'bfs fechados))
+  (let* ((sucessores-gerados (remove-if (lambda (suc) (no-existp suc fechados 'bfs)) (funcall funcao-sucessore no-inicial operadores 'bfs)))
          ; Gera a lista de nós que são solução
          (solucao (list (apply #'append (mapcar (lambda (suc) (cond ((funcall objetivop suc) suc))) sucessores-gerados))))
          ; Gera a lista de nós abertos com os nós sucessores (que não constam na lista de nós abertos) adicionados
@@ -243,7 +258,7 @@
          ; Lista de nós abertos juntamente com os nós fechados
   (let* ((abertos-fechados (append abertos fechados))
          ; Lista de nós sucessores gerados pelo nó passado como argumento através dos operadores
-         (sucessores-gerados (funcall funcao-sucessores no-inicial operadores 'dfs abertos-fechados profundidade-max))
+         (sucessores-gerados (remove-if (lambda (suc) (no-existp suc abertos-fechados 'dfs)) (funcall funcao-sucessores no-inicial operadores 'dfs profundidade-max)))
          ; Lista de nós que são solução
          (solucao (list (apply #'append (mapcar (lambda (suc) (cond ((funcall objetivop suc) suc))) sucessores-gerados))))
          ; Lista de nós abertos com os nós sucessores (que não constam na lista de nós abertos e fechados) adicionados
@@ -266,23 +281,14 @@
   )
 )
 
+(defun aestrela ()
+
+)
+
 ;;; Medidas de desempenho
 
 ;; Função que calcula a penetrância do resultado
 (defun penetrancia (no nos-gerados)
   "Calcula a penetrância do resultado"
   (/ (no-profundidade no) nos-gerados)
-)
-
-
-;;; Escrita de soluções
-
-;; Função que escreve o caminho percorrido
-(defun escreve-caminho (caminho &optional (saida t) enrolar (i 0))
-  "Função que escreve o caminho percorrido"
-  (cond ((null caminho) nil)
-        ((and enrolar (= i 9)) (progn (format saida "~%~9<~>") (escreve-caminho caminho saida enrolar 0)))
-        ((= (length caminho) 1) (escreve-posicao (car caminho) saida))
-        (t (progn (escreve-posicao (car caminho) saida) (format saida "->") (escreve-caminho (cdr caminho) saida enrolar (1+ i))))     
-  )
 )
