@@ -232,6 +232,40 @@
   )
 )
 
+;; Predicado que recebe uma lista de nós, um nó e opcionalmente um predicado (no-argumento no-atual),
+;; e retorna T se pertence à lista, caso contrário NIL
+(defun lista-contem-no-p (lista no &optional (pred (lambda (no no-atual) (equal no no-atual))))
+  "Predicado que verifica se um nó existe numa lista de nós"
+  (cond ((null lista) nil)
+        ((funcall pred no (car lista)) t)
+        (t (lista-contem-no-p (cdr lista) no))
+  )
+)
+
+(defun recalcular-profundidade (lista-sucessores lista-abertos-ou-fechados)
+  "Função que recalcula a profundidade dos nós que se encontram em abertos ou fechados"
+  (cond ((null lista-abertos-ou-fechados) nil)
+        ((null lista-sucessores) nil)
+        (t (cons (recalcular-profundidade-auxiliar (car lista-abertos-ou-fechados) lista-sucessores) (recalcular-profundidade lista-sucessores (cdr lista-abertos-ou-fechados))))
+  )
+)
+
+(defun recalcular-profundidade-auxiliar (no-atual lista-sucessores)
+  (let ((contem-estado-igual (lista-contem-no-p lista-sucessores no-atual (lambda (no no-atual) (equal (no-estado no) (no-estado no-atual))))))
+    (cond (contem-estado-igual (substituir-no-pai-e-profundidade no-atual lista-sucessores))
+          (t (format t "Estado diferente~%"))
+    )
+  )
+)
+
+(defun substituir-no-pai-e-profundidade ()
+
+)
+
+(defun recalcular-profundidade-teste ()
+  (recalcular-profundidade (list (cria-no (tabuleiro-jogado) 1 0 (cria-no (tabuleiro-teste)) 0) (cria-no (operador-2 (tabuleiro-jogado)) 1 0 (cria-no (tabuleiro-teste)) 0)) 
+                           (list (cria-no (tabuleiro-jogado) 1 0 (cria-no (tabuleiro-teste)) 0) (cria-no (tabuleiro-teste) 0 0 nil 0)))
+)
 ;;; Heurísticas
 
 ;; Função que representa uma heurística base
@@ -319,21 +353,22 @@
          (solucao (list (apply #'append (mapcar (lambda (suc) (cond ((funcall objetivop suc) suc))) sucessores-gerados))))
          ; Lista de nós abertos com os nós sucessores (que não constam na lista de nós abertos e fechados) adicionados
          (abertos-novo (abertos-dfs abertos sucessores-gerados))
-        )
-        (let ((nos-expandidos-novo (1+ nos-expandidos))
-              (nos-gerados-novo (+ nos-gerados (length sucessores-gerados)))
-             )
-          (cond 
-            ; Verifica se o nó inicial é solução, se for retorna-o
-            ((funcall objetivop no-inicial) (list no-inicial nos-expandidos-novo nos-gerados (penetrancia no-inicial nos-gerados) 0))
-            ; Verifica se a lista de nós abertos é nula, se for retorna NIL
-            ((null abertos-novo) (list nil nos-expandidos-novo nos-gerados-novo 0 0))
-            ; Verifica se a lista de nós solução não é nula, se não for retorna o 1º nó da lista
-            ((not (null (car solucao))) (list (car solucao) nos-expandidos-novo nos-gerados-novo (penetrancia (car solucao) nos-gerados-novo) 0))
-            ; Aplica recursividade para continuar a procurar
-            (t (dfs-loop (car abertos-novo) objetivop funcao-sucessores operadores profundidade-max nos-expandidos-novo nos-gerados-novo (cdr abertos-novo) (append fechados (list no-inicial))))
-          )
-        )
+         ; Lista de nós abertos com as profundidades recalculadas
+         (abertos-recalculados (recalcular-profundidade sucessores-gerados abertos))
+         (fechados-recalculados (recalcular-profundidade sucessores-gerados fechados)))
+    (let ((nos-expandidos-novo (1+ nos-expandidos))
+          (nos-gerados-novo (+ nos-gerados (length sucessores-gerados))))
+      (cond 
+        ; Verifica se o nó inicial é solução, se for retorna-o
+        ((funcall objetivop no-inicial) (list no-inicial nos-expandidos-novo nos-gerados (penetrancia no-inicial nos-gerados) 0))
+        ; Verifica se a lista de nós abertos é nula, se for retorna NIL
+        ((null abertos-novo) (list nil nos-expandidos-novo nos-gerados-novo 0 0))
+        ; Verifica se a lista de nós solução não é nula, se não for retorna o 1º nó da lista
+        ((not (null (car solucao))) (list (car solucao) nos-expandidos-novo nos-gerados-novo (penetrancia (car solucao) nos-gerados-novo) 0))
+        ; Aplica recursividade para continuar a procurar
+        (t (dfs-loop (car abertos-novo) objetivop funcao-sucessores operadores profundidade-max nos-expandidos-novo nos-gerados-novo (cdr abertos-novo) (append fechados (list no-inicial))))
+      )
+    )
   )
 )
 
@@ -389,6 +424,10 @@
 
 (defun aestrela-teste ()
   (aestrela (cria-no (tabuleiro-aleatorio)) (cria-objetivo 2000) 'sucessores 'heuristica-base (operadores))
+)
+
+(defun dfs-teste ()
+  (dfs (cria-no (problema-tabuleiro (ler-problema 3))) (cria-objetivo 270) 'sucessores (operadores) 15)
 )
 
 ;;; Medidas de desempenho
