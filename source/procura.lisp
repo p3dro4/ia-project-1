@@ -379,7 +379,8 @@
          ; Lista de nós abertos com os nós sucessores (que não constam na lista de nós abertos e fechados) adicionados
          (abertos-novo (abertos-dfs abertos sucessores-gerados))
          ; Lista de nós abertos com as profundidades recalculadas
-         (abertos-recalculados (recalcular-profundidade sucessores-gerados abertos))
+         (abertos-recalculados (recalcular-profundidade sucessores-gerados abertos-novo))
+         ; Lista de nós fechados com as profundidades recalculadas
          (fechados-recalculados (recalcular-profundidade sucessores-gerados fechados)))
     (let ((nos-expandidos-novo (1+ nos-expandidos))
           (nos-gerados-novo (+ nos-gerados (length sucessores-gerados))))
@@ -387,11 +388,11 @@
         ; Verifica se o nó inicial é solução, se for retorna-o
         ((funcall objetivop no-inicial) (list no-inicial nos-expandidos-novo nos-gerados (penetrancia no-inicial nos-gerados) 0))
         ; Verifica se a lista de nós abertos é nula, se for retorna NIL
-        ((null abertos-novo) (list nil nos-expandidos-novo nos-gerados-novo 0 0))
+        ((null abertos-recalculados) (list nil nos-expandidos-novo nos-gerados-novo 0 0))
         ; Verifica se a lista de nós solução não é nula, se não for retorna o 1º nó da lista
         ((not (null (car solucao))) (list (car solucao) nos-expandidos-novo nos-gerados-novo (penetrancia (car solucao) nos-gerados-novo) 0))
         ; Aplica recursividade para continuar a procurar
-        (t (dfs-loop (car abertos-novo) objetivop funcao-sucessores operadores profundidade-max nos-expandidos-novo nos-gerados-novo (cdr abertos-novo) (append fechados (list no-inicial))))
+        (t (dfs-loop (car abertos-novo) objetivop funcao-sucessores operadores profundidade-max nos-expandidos-novo nos-gerados-novo (cdr abertos-recalculados) (append fechados-recalculados (list no-inicial))))
       )
     )
   )
@@ -449,10 +450,6 @@
 
 (defun aestrela-teste ()
   (aestrela (cria-no (tabuleiro-aleatorio)) (cria-objetivo 2000) 'sucessores 'heuristica-base (operadores))
-)
-
-(defun dfs-teste ()
-  (dfs (cria-no (problema-tabuleiro (ler-problema 3))) (cria-objetivo 270) 'sucessores (operadores) 15)
 )
 
 ;;; Medidas de desempenho
