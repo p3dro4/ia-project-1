@@ -232,14 +232,6 @@
   )
 )
 
-(defun lista-contem-no (lista no)
-  "Função que verifica se um nó existe numa lista de nós"
-  (cond ((null lista) nil)
-        ((equal no (car lista)) t)
-        (t (lista-contem-no (cdr lista) no))
-  )
-)
-
 ;;; Heurísticas
 
 ;; Função que representa uma heurística base
