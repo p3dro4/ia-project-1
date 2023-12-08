@@ -242,6 +242,7 @@
   )
 )
 
+;; Função que recalcula a profundidade dos nós que se encontram em abertos ou fechados
 (defun recalcular-profundidade (lista-sucessores lista-nos &optional nos-recalculados)
   "Função que recalcula a profundidade dos nós que se encontram em abertos ou fechados"
   (cond ((null lista-nos) nos-recalculados)
@@ -251,6 +252,7 @@
   )
 )
 
+;; Função auxiliar que recalcula a profundidade de um nó baseado na lista de sucessores
 (defun recalcular-profundidade-auxiliar (no-atual lista-sucessores &optional no-recalculado)
   "Função auxiliar que recalcula a profundidade de um nó baseado na lista de sucessores"
   (cond ((and (null lista-sucessores) (null no-recalculado)) no-atual)
@@ -272,6 +274,7 @@
   )
 )
 
+;; Função que procura na estrutura do nó passado como argumento (o nó e os pais) e substitui o nó encontrado pelo nó substituto
 (defun procurar-e-substituir-no (no no-substituto)
   "Função que procura na estrutura do nó passado como argumento (o nó e os pais) e substitui o nó encontrado pelo nó substituto"
   (cond ((null (no-pai no)) nil)
@@ -285,28 +288,6 @@
                  )
            )
         )
-  )
-)
-
-(defun procurar-e-substituir-no-teste ()
-  (format t "No antes > ~a~%" (cria-no (operador-2 (operador-2 (tabuleiro-jogado))) 5 0 (cria-no (operador-2 (tabuleiro-jogado)) 4 0 (cria-no (tabuleiro-jogado) 3 0 (cria-no (tabuleiro-teste)) 0) 0) 0))
-  (format t "No depois > ~a~%" (procurar-e-substituir-no (cria-no (operador-2 (operador-2 (tabuleiro-jogado))) 5 0 (cria-no (operador-2 (tabuleiro-jogado)) 4 0 (cria-no (tabuleiro-jogado) 3 0 (cria-no (tabuleiro-teste)) 0) 0) 0) (cria-no (tabuleiro-jogado) 1 0 (cria-no (tabuleiro-teste)) 0)))
-  (format t "No nao encontrado > ~a~%" (procurar-e-substituir-no (cria-no (operador-2 (operador-2 (tabuleiro-jogado))) 5 0 (cria-no (operador-2 (tabuleiro-jogado)) 4 0 (cria-no (tabuleiro-jogado) 3 0 (cria-no (tabuleiro-teste)) 0) 0) 0) (cria-no (tabuleiro-aleatorio) 1 0 (cria-no (tabuleiro-teste)) 0)))
-)
-
-(defun recalcular-profundidade-teste ()
-  (let* ((lista-nos (list (cria-no (operador-2 (operador-2 (tabuleiro-jogado))) 5 0 (cria-no (operador-2 (tabuleiro-jogado)) 4 0 (cria-no (tabuleiro-jogado) 3 0 (cria-no (tabuleiro-teste))))) 
-                          (cria-no (operador-2 (tabuleiro-jogado)) 4 0 (cria-no (tabuleiro-jogado) 3 0 (cria-no (tabuleiro-teste)))) 
-                          (cria-no (operador-3 (tabuleiro-jogado)) 4 0 (cria-no (tabuleiro-jogado) 3 0 (cria-no (tabuleiro-teste)))) 
-                          (cria-no (tabuleiro-jogado) 3 0 (cria-no (tabuleiro-teste))) 
-                          (cria-no (tabuleiro-teste))))
-        (lista-sucessores (list (cria-no (tabuleiro-jogado) 1 0 (cria-no (tabuleiro-teste)) 0) 
-                                (cria-no (operador-2 (tabuleiro-jogado)) 2 0 (cria-no (tabuleiro-teste)) 0)))
-        (lista-recalculada (recalcular-profundidade lista-sucessores lista-nos)))
-    (format t "tamanho antes > ~a~%" (length lista-nos))
-    (mapcar (lambda (no) (format t "custo antes > ~a~%" (no-profundidade no))) lista-nos)
-    (format t "~%tamanho depois > ~a~%" (length lista-recalculada))
-    (mapcar (lambda (no) (format t "custo depois > ~a~%" (no-profundidade no))) lista-recalculada)
   )
 )
 
