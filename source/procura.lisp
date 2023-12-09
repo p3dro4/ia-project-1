@@ -87,7 +87,7 @@
                (valor-destino (celula (first posicao-destino) (second posicao-destino) (no-estado no)))
                (pontuacao (+ (no-pontuacao no) valor-destino))
                (g (1+ (no-profundidade no)))
-               (h (cond ((null funcao-heuristica) 0) (t (funcall funcao-heuristica no)))))
+               (h (cond ((null funcao-heuristica) 0) (t (funcall funcao-heuristica estado-gerado pontuacao)))))
           (cria-no estado-gerado g h no pontuacao)
         )
      )
@@ -100,7 +100,7 @@
   "Função que retorna a lista de sucessores de um nó"
   (cond ((null no) nil)
         ((and (equal algoritmo 'dfs) (>= (no-profundidade no) profundidade-max)) nil)
-        ((atom operadores) (sucessores-iniciais no operadores))
+        ((atom operadores) (sucessores-iniciais no operadores funcao-heuristica))
         (t (apply #'append (mapcar (lambda (op) 
               (let ((sucessor (novo-sucessor no op funcao-heuristica)))
                     (cond ((null sucessor) nil)
@@ -112,14 +112,15 @@
 )
 
 ;; Função que retorna a lista de sucessores de um nó após a colocação inicial do cavalo
-(defun sucessores-iniciais (no op &optional (i 0))
+(defun sucessores-iniciais (no op &optional funcao-heuristica (i 0))
   "Função que retorna a lista de sucessores de um nó após a colocação inicial do cavalo"
   (cond ((>= i (length (car (no-estado no)))) nil) 
         (t (let* ((estado-gerado (funcall op (no-estado no) i))) 
-            (cond ((null estado-gerado) (sucessores-iniciais no op (1+ i)))
+            (cond ((null estado-gerado) (sucessores-iniciais no op funcao-heuristica (1+ i)))
                   (t (let* ((posicao-destino (posicao-cavalo estado-gerado))
-                           (valor-destino (celula (first posicao-destino) (second posicao-destino) (no-estado no))))   
-                      (append (list (cria-no estado-gerado (1+ (no-profundidade no)) 0 no (+ (no-pontuacao no) valor-destino))) (sucessores-iniciais no op (1+ i)))
+                            (valor-destino (celula (first posicao-destino) (second posicao-destino) (no-estado no)))
+                            (pontuacao (+ (no-pontuacao no) valor-destino)))   
+                      (append (list (cria-no estado-gerado (1+ (no-profundidade no)) (cond ((null funcao-heuristica) 0) (t (funcall funcao-heuristica estado-gerado pontuacao))) no pontuacao)) (sucessores-iniciais no op funcao-heuristica (1+ i)))
                      )
                   )
             )
@@ -137,11 +138,13 @@
   (list (lambda (no) (>= (no-pontuacao no) valor)) valor)
 )
 
+;; Função que retorna a função objetivo
 (defun objetivo-funcao (objetivo)
   "Função que retorna a função objetivo de um nó"
   (first objetivo)
 )
 
+;; Função que retorna o valor do objetivo
 (defun objetivo-valor (objetivo)
   "Função que retorna o valor objetivo de um nó"
   (second objetivo)
@@ -159,6 +162,13 @@
 (defun abertos-dfs (lista-abertos lista-sucessores)
   "Função que adiciona os nós sucessores à lista de nós abertos (dfs)"
   (append lista-sucessores lista-abertos)
+)
+
+;; Função que adiciona os nós sucessores à lista de nós abertos,
+;; inserindo-os por ordem crescente de custo
+(defun colocar-sucessores-em-abertos (lista-abertos lista-sucessores)
+  "Função que adiciona os nós sucessores à lista de nós abertos, inserindo-os por ordem crescente de custo"
+  (ordenar-nos (append lista-abertos lista-sucessores))
 )
 
 ;; Função que verifica se um nó existe numa lista de nós
@@ -225,6 +235,34 @@
   )
 )
 
+;; Função que ordena a lista de nós por ordem crescente de custo
+(defun ordenar-nos (lista-nos)
+  "Função que ordena a lista de nós por ordem crescente de custo"
+  (cond ((null lista-nos) nil)
+        (t (cons (no-menor-custo lista-nos) (ordenar-nos (remove-if (lambda (no) (equal no (no-menor-custo lista-nos))) lista-nos))))
+  )
+)
+
+;; Função que retorna o nó com menor custo
+(defun no-menor-custo (lista-nos &optional no-min)
+  "Função que retorna o nó com menor custo"
+  (cond ((null lista-nos) no-min)
+        (t (compara-custo-nos (no-menor-custo (cdr lista-nos)) (car lista-nos)))
+  )
+)
+
+;; Função que compara dois nós, retornando o nó com menor custo
+(defun compara-custo-nos (no1 no2)
+  "Compara dois nós, retornando o nó com menor custo"
+    (cond ((and (null no1) (null no2)) nil)
+        ((null no1) no2)
+        ((null no2) no1)
+        (t (cond ((<= (no-custo no1) (no-custo no2)) no1)
+                 (t no2))
+        )
+  ) 
+)
+
 ;;; Heurísticas
 
 ;; Função que representa uma heurística base
@@ -235,13 +273,6 @@
           (t heuristica)
     )
   )
-)
-
-(defun aplicar-heuristica (lista-sucessores funcao-heurisica objetivo)
-  "Função que aplica uma heurística a uma lista de nós"
-  (mapcar (lambda (suc) (let ((h (funcall funcao-heurisica (no-estado suc) objetivo (no-pontuacao suc)))) 
-            (cria-no (no-estado suc) (no-profundidade suc) h (no-pai suc) (no-pontuacao suc))))
-   lista-sucessores)
 )
 
 ;;; Algoritmos de procura
@@ -271,7 +302,7 @@
 (defun bfs-loop (no-inicial objetivop funcao-sucessores operadores nos-expandidos nos-gerados abertos fechados &optional (tempo-inicial (get-internal-real-time)))
   "Função auxiliar para o algoritmo de procura em largura"
          ; Gera a lista de nós sucessores, gerados pelo nó passado como argumento, através dos operadores
-  (let* ((sucessores-gerados (remover-se (lambda (suc) (no-existp suc fechados 'bfs)) (funcall funcao-sucessores no-inicial operadores 'bfs)))
+  (let* ((sucessores-gerados (remove-if (lambda (suc) (no-existp suc fechados 'bfs)) (funcall funcao-sucessores no-inicial operadores 'bfs)))
          ; Gera a lista de nós que são solução
          (solucao (list (apply #'append (mapcar (lambda (suc) (cond ((funcall objetivop suc) suc))) sucessores-gerados))))
          ; Gera a lista de nós abertos com os nós sucessores (que não constam na lista de nós abertos) adicionados
@@ -321,7 +352,7 @@
          ; Lista de nós abertos juntamente com os nós fechados
   (let* ((abertos-fechados (append abertos fechados))
          ; Lista de nós sucessores gerados pelo nó passado como argumento através dos operadores
-         (sucessores-gerados (remover-se (lambda (suc) (no-existp suc abertos-fechados 'dfs)) (funcall funcao-sucessores no-inicial operadores 'dfs profundidade-max)))
+         (sucessores-gerados (remove-if (lambda (suc) (no-existp suc abertos-fechados 'dfs)) (funcall funcao-sucessores no-inicial operadores 'dfs profundidade-max)))
          ; Lista de nós que são solução
          (solucao (list (apply #'append (mapcar (lambda (suc) (cond ((funcall objetivop suc) suc))) sucessores-gerados))))
          ; Lista de nós abertos com as profundidades recalculadas
@@ -343,6 +374,39 @@
         (t (dfs-loop (car abertos-novo) objetivop funcao-sucessores operadores profundidade-max nos-expandidos-novo nos-gerados-novo (cdr abertos-novo) (append fechados-recalculados (list no-inicial)) tempo-inicial))
       )
     )
+  )
+)
+
+;; Algoritmo de procura A*
+(defun aestrela (no-inicial objetivo funcao-sucessores funcao-heuristica operadores &optional abertos fechados (tempo-inicial (get-internal-real-time)))
+  "Implementação do algoritmo de procura A*. Recebe o nó inicial, o objetivo de pontuação, a função que calcula a heurística, os nós sucessores, os operadores e como parâmetros opcionais a lista de abertos e fechados. Retorna uma lista com os nós que compõem o caminho, ou NIL."
+  (let ((heuristica (lambda (estado pontuacao) (funcall funcao-heuristica estado (objetivo-valor objetivo) pontuacao))))
+    (cond ((null no-inicial) error "Nó inicial não pode ser nulo")
+        ((= (no-profundidade no-inicial) 0)
+          (cond ((not (cavalo-colocado-p (no-estado no-inicial)))
+                  (let ((sucessores-no-inicial (sucessores no-inicial (car operadores) 'aestrela 0 heuristica)))
+                    (cond ((null sucessores-no-inicial) (list nil 1 0 0 0 (/ (- (get-internal-real-time) tempo-inicial) internal-time-units-per-second)))
+                          (t (aestrela (car sucessores-no-inicial) objetivo funcao-sucessores funcao-heuristica (cdr operadores) (cdr sucessores-no-inicial) (append fechados (list no-inicial)) tempo-inicial))
+                    )
+                  )
+                )
+                (t (aestrela-loop no-inicial (objetivo-funcao objetivo) funcao-sucessores heuristica (cdr operadores) (length fechados) (1+ (length abertos)) abertos fechados tempo-inicial))
+          )
+        )
+        ; Caso recursivo: executa a função normalmente, com recurso à função auxiliar
+        (t (aestrela-loop no-inicial (objetivo-funcao objetivo) funcao-sucessores heuristica operadores (length fechados) (1+ (length abertos)) abertos fechados tempo-inicial))
+    )
+  )
+)
+
+;; Função auxiliar que implementa o algoritmo de procura A*
+(defun aestrela-loop (no-inicial objetivop funcao-sucessores funcao-heuristica operadores nos-expandidos nos-gerados abertos fechados tempo-inicial)
+  
+)
+
+(defun aestrela-teste ()
+  (let ((resultado (aestrela (cria-no (problema-tabuleiro (ler-problema 1))) (cria-objetivo 60) 'sucessores 'heuristica-base (operadores))))
+    (mapcar (lambda (no) (format t "heuristica > ~3,4f~%" (no-heuristica no))) resultado)
   )
 )
 

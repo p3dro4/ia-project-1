@@ -74,7 +74,7 @@
   "Baralha os elementos da lista de forma aleatoria"
     (cond ((null lista) nil)
           (t (let ((num-aleatorio (nth (random (length lista)) lista)))
-                  (append (list num-aleatorio) (baralhar (remover-se 
+                  (append (list num-aleatorio) (baralhar (remove-if
                             (lambda (num) (= num num-aleatorio)) lista)))))
     )
 )
@@ -157,7 +157,7 @@
 ;; teste: (numeros-tabuleiro (tabuleiro-jogado))
 ;; resultado: tabuleiro com os símbolos nil e t removidos
 (defun numeros-tabuleiro (tabuleiro)
-  (remover-se (lambda (num) (or (eq num t) (null num))) (juntar-linhas tabuleiro))
+  (remove-if (lambda (num) (or (eq num t) (null num))) (juntar-linhas tabuleiro))
 )
 
 ;; Função auxiliar que recebe um tabuleiro e retorna uma lista com todas as linhas do tabuleiro juntas.
@@ -201,15 +201,6 @@
           (t (int-char (+ (char-int letra) num)))
     )
   )
-)
-
-;; Função auxiliar que recebe um predicado e uma lista e
-;; remove da lista os elementos que satisfazem o predicado.
-(defun remover-se (pred lista)
-  "Remove da lista os elementos que satisfazem o predicado"
-  (cond ((null lista) NIL) 
-        ((funcall pred (car lista)) (remover-se pred (cdr lista)))
-        (t (cons (car lista) (remover-se pred (cdr lista)))))
 )
 
 ;; Função que recebe um índice, uma lista e um valor (por default o valor é NIL) e
