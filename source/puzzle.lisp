@@ -318,7 +318,7 @@
 ;; Função que retorna a lista de operadores aplicáveis a um estado.
 (defun operadores ()
   "Retorna a lista de movimentos do cavalo"
-  (list 'operador-1 'operador-2 'operador-3 'operador-4 'operador-5 'operador-6 'operador-7 'operador-8)
+  (list 'colocar-cavalo 'operador-1 'operador-2 'operador-3 'operador-4 'operador-5 'operador-6 'operador-7 'operador-8)
 )
 
 ;; Função que movimenta o cavalo 2 casas para baixo e 1 casa para a esquerda.

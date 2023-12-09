@@ -84,12 +84,7 @@
 (defun executar-algoritmo-problema (problema algoritmo &optional (max-profundidade 15))
   "Executa o algoritmo de procura fornecido no problema fornecido"
   (cond ((null problema) nil)
-        (t (let* ((tempo-inicial (get-internal-real-time))
-                  (resultado (funcall algoritmo (cria-no (problema-tabuleiro problema)) (cria-objetivo (problema-objetivo problema)) 'sucessores (operadores) max-profundidade))
-                  (tempo-de-execucao (- (get-internal-real-time) tempo-inicial)))
-            (append resultado (list (/ tempo-de-execucao internal-time-units-per-second)))
-          )
-        )
+        (t (funcall algoritmo (cria-no (problema-tabuleiro problema)) (cria-objetivo (problema-objetivo problema)) 'sucessores (operadores) max-profundidade))
   )
 )
 
