@@ -250,10 +250,13 @@
 (defun bfs (no-inicial objetivo funcao-sucessores operadores &optional abertos fechados)
   "Implementação do algoritmo de procura em largura. Recebe o nó inicial, o objetivo de pontuação, os nós sucessores, os operadores e como parâmetros opcionais a lista de abertos e fechados. Retorna uma lista com os nós que compõem o caminho, ou NIL."
         ; Caso base: primeira chamada da função; profundidade é zero; o cavalo é colocado na primeira linha
-  (cond ((= (no-profundidade no-inicial) 0)
+  (cond ((null no-inicial) error "Nó inicial não pode ser nulo")
+        ((= (no-profundidade no-inicial) 0)
           (cond ((not (cavalo-colocado-p (no-estado no-inicial)))
                   (let ((sucessores-no-inicial (sucessores no-inicial (car operadores) 'bfs)))
-                    (bfs (car sucessores-no-inicial) objetivo funcao-sucessores (cdr operadores) (cdr sucessores-no-inicial) (append fechados (list no-inicial)))
+                    (cond ((null sucessores-no-inicial) (list nil 1 0 0 0 (/ (- (get-internal-real-time) tempo-inicial) internal-time-units-per-second)))
+                          (t (bfs (car sucessores-no-inicial) objetivo funcao-sucessores (cdr operadores) (cdr sucessores-no-inicial) (append fechados (list no-inicial))))
+                    )
                   )
                 )
                 (t (bfs-loop no-inicial (objetivo-funcao objetivo) funcao-sucessores (cdr operadores) (length fechados) (1+ (length abertos)) abertos fechados))
@@ -292,21 +295,28 @@
 )
 
 ;; Algoritmo de procura em profundidade
-(defun dfs (no-inicial objetivo funcao-sucessores operadores profundidade-max &optional abertos fechados)
+(defun dfs (no-inicial objetivo funcao-sucessores operadores profundidade-max &optional abertos fechados (tempo-inicial (get-internal-real-time)))
   "Implementação do algoritmo de procura em largura. Recebe o nó inicial, o objetivo de pontuação, os nós sucessores, os operadores e como parâmetros opcionais a lista de abertos e fechados. Retorna uma lista com os nós que compõem o caminho, ou NIL."
          ; Caso base: primeira chamada da função; profundidade é zero; o cavalo é colocado na primeira linha
-  (cond ((= (no-profundidade no-inicial) 0) 
-         (let ((sucessores-no-inicial (sucessores-iniciais no-inicial)))
-          (dfs (car sucessores-no-inicial) objetivo funcao-sucessores operadores profundidade-max (cdr sucessores-no-inicial) (append fechados (list no-inicial)))
-         )
+  (cond ((null no-inicial) error "Nó inicial não pode ser nulo")
+        ((= (no-profundidade no-inicial) 0)
+          (cond ((not (cavalo-colocado-p (no-estado no-inicial)))
+                  (let ((sucessores-no-inicial (sucessores no-inicial (car operadores) 'dfs profundidade-max)))
+                    (cond ((null sucessores-no-inicial) (list nil 1 0 0 0 (/ (- (get-internal-real-time) tempo-inicial) internal-time-units-per-second)))
+                          (t (dfs (car sucessores-no-inicial) objetivo funcao-sucessores (cdr operadores) profundidade-max (cdr sucessores-no-inicial) (append fechados (list no-inicial)) tempo-inicial))
+                    )
+                  )
+                )
+                (t (dfs-loop no-inicial (objetivo-funcao objetivo) funcao-sucessores (cdr operadores) profundidade-max (length fechados) (1+ (length abertos)) abertos fechados tempo-inicial))
+          )
         )
         ; Caso recursivo: executa a função normalmente, com recurso à função auxiliar
-        (t (dfs-loop no-inicial (objetivo-funcao objetivo) funcao-sucessores operadores profundidade-max (length fechados) (1+ (length abertos)) abertos fechados))
+        (t (dfs-loop no-inicial (objetivo-funcao objetivo) funcao-sucessores operadores profundidade-max (length fechados) (1+ (length abertos)) abertos fechados tempo-inicial))
   )
 )
 
 ;; Função auxiliar que implementa o algoritmo de procura em profundidade
-(defun dfs-loop (no-inicial objetivop funcao-sucessores operadores profundidade-max &optional (nos-expandidos 0) (nos-gerados 0) abertos fechados)
+(defun dfs-loop (no-inicial objetivop funcao-sucessores operadores profundidade-max nos-expandidos nos-gerados abertos fechados tempo-inicial)
   "Função auxiliar para o algoritmo de procura em profundidade"
          ; Lista de nós abertos juntamente com os nós fechados
   (let* ((abertos-fechados (append abertos fechados))
@@ -324,13 +334,13 @@
           (nos-gerados-novo (+ nos-gerados (length sucessores-gerados))))
       (cond 
         ; Verifica se o nó inicial é solução, se for retorna-o
-        ((funcall objetivop no-inicial) (list no-inicial nos-expandidos-novo nos-gerados (penetrancia no-inicial nos-gerados) (ramificacao-media no-inicial nos-gerados)))
+        ((funcall objetivop no-inicial) (list no-inicial nos-expandidos-novo nos-gerados (penetrancia no-inicial nos-gerados) (ramificacao-media no-inicial nos-gerados) (/ (- (get-internal-real-time) tempo-inicial) internal-time-units-per-second)))
         ; Verifica se a lista de nós abertos é nula, se for retorna NIL
-        ((null abertos-recalculados) (list nil nos-expandidos-novo nos-gerados-novo 0 0))
+        ((null abertos-recalculados) (list nil nos-expandidos-novo nos-gerados-novo 0 0 (/ (- (get-internal-real-time) tempo-inicial) internal-time-units-per-second)))
         ; Verifica se a lista de nós solução não é nula, se não for retorna o 1º nó da lista
-        ((not (null (car solucao))) (list (car solucao) nos-expandidos-novo nos-gerados-novo (penetrancia (car solucao) nos-gerados-novo) (ramificacao-media (car solucao) nos-gerados-novo)))
+        ((not (null (car solucao))) (list (car solucao) nos-expandidos-novo nos-gerados-novo (penetrancia (car solucao) nos-gerados-novo) (ramificacao-media (car solucao) nos-gerados-novo) (/ (- (get-internal-real-time) tempo-inicial) internal-time-units-per-second)))
         ; Aplica recursividade para continuar a procurar
-        (t (dfs-loop (car abertos-novo) objetivop funcao-sucessores operadores profundidade-max nos-expandidos-novo nos-gerados-novo (cdr abertos-novo) (append fechados-recalculados (list no-inicial))))
+        (t (dfs-loop (car abertos-novo) objetivop funcao-sucessores operadores profundidade-max nos-expandidos-novo nos-gerados-novo (cdr abertos-novo) (append fechados-recalculados (list no-inicial)) tempo-inicial))
       )
     )
   )
