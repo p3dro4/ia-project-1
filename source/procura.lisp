@@ -178,60 +178,6 @@
   )
 )
 
-;; Compara dois nós, retornando o nó com maior pontuação
-(defun compara-pontuacao-nos (no1 no2)
-  "Compara dois nós, retornando o nó com maior pontuação"
-  (cond ((and (null no1) (null no2)) nil)
-        ((null no1) no2)
-        ((null no2) no1)
-        (t (cond ((>= (no-pontuacao no1) (no-pontuacao no2)) no1)
-                 (t no2))
-        )
-  ) 
-)
-
-(defun compara-custo-nos (no1 no2)
-  "Compara dois nós, retornando o nó com menor custo"
-    (cond ((and (null no1) (null no2)) nil)
-        ((null no1) no2)
-        ((null no2) no1)
-        (t (cond ((<= (no-custo no1) (no-custo no2)) no1)
-                 (t no2))
-        )
-  ) 
-)
-
-;; Função que retorna o nó com menor custo
-(defun no-menor-custo (lista-nos &optional no-min)
-  "Função que retorna o nó com menor custo"
-  (cond ((null lista-nos) no-min)
-        (t (compara-custo-nos (no-menor-custo (cdr lista-nos)) (car lista-nos)))
-  )
-)
-
-;; Função que retorna a média dos valores fornecidos
-(defun media (lista)
-  "Função que retorna a média dos valores fornecidos"
-  (/ (apply #'+ lista) (length lista))
-)
-
-;; Função que ordena a lista de nós por ordem crescente de custo
-(defun ordena-nos-custo (lista-nos)
-  "Função que ordena a lista de nós por ordem crescente de custo"
-  (cond ((null lista-nos) nil)
-        (t (cons (no-menor-custo lista-nos) (ordena-nos-custo (remover-se (lambda (no) (equal no (no-menor-custo lista-nos))) lista-nos))))
-  )
-)
-
-;; Função que retorna a lista de nós com o custo menor que o valor dado
-(defun lista-nos-custo-menores-que (lista-nos valor)
-  "Função que retorna a lista de nós com o custo menor que o valor dado"
-  (cond ((null lista-nos) nil)
-        ((>= (no-custo (car lista-nos)) valor) (lista-nos-custo-menores-que (cdr lista-nos) valor))
-        (t (cons (car lista-nos) (lista-nos-custo-menores-que (cdr lista-nos) valor)))
-  )
-)
-
 ;; Predicado que recebe uma lista de nós, um nó e opcionalmente um predicado (no-argumento no-atual),
 ;; e retorna T se pertence à lista, caso contrário NIL
 (defun lista-contem-no-p (lista no &optional (pred (lambda (no no-atual) (equal no no-atual))))
@@ -341,11 +287,11 @@
              )
           (cond 
             ; Verifica se o nó inicial é solução, se for retorna-o
-            ((funcall objetivop no-inicial) (list no-inicial nos-expandidos-novo nos-gerados (penetrancia no-inicial nos-gerados) 0))
+            ((funcall objetivop no-inicial) (list no-inicial nos-expandidos-novo nos-gerados (penetrancia no-inicial nos-gerados) (ramificacao-media no-inicial nos-gerados)))
             ; Verifica se a lista de nós abertos é nula, se for retorna NIL
             ((null abertos-novo) (list nil nos-expandidos-novo nos-gerados-novo 0 0))
             ; Verifica se a lista de nós solução não é nula, se não for retorna o 1º nó da lista
-            ((not (null (car solucao))) (list (car solucao) nos-expandidos-novo nos-gerados-novo (penetrancia (car solucao) nos-gerados-novo) 0))
+            ((not (null (car solucao))) (list (car solucao) nos-expandidos-novo nos-gerados-novo (penetrancia (car solucao) nos-gerados-novo) (ramificacao-media (car solucao) nos-gerados-novo)))
             ; Aplica recursividade para continuar a procurar
             (t (bfs-loop (car abertos-novo) objetivop funcao-sucessores operadores nos-expandidos-novo nos-gerados-novo (cdr abertos-novo) (append fechados (list no-inicial))))
           )
@@ -386,70 +332,16 @@
           (nos-gerados-novo (+ nos-gerados (length sucessores-gerados))))
       (cond 
         ; Verifica se o nó inicial é solução, se for retorna-o
-        ((funcall objetivop no-inicial) (list no-inicial nos-expandidos-novo nos-gerados (penetrancia no-inicial nos-gerados) 0))
+        ((funcall objetivop no-inicial) (list no-inicial nos-expandidos-novo nos-gerados (penetrancia no-inicial nos-gerados) (ramificacao-media no-inicial nos-gerados)))
         ; Verifica se a lista de nós abertos é nula, se for retorna NIL
         ((null abertos-recalculados) (list nil nos-expandidos-novo nos-gerados-novo 0 0))
         ; Verifica se a lista de nós solução não é nula, se não for retorna o 1º nó da lista
-        ((not (null (car solucao))) (list (car solucao) nos-expandidos-novo nos-gerados-novo (penetrancia (car solucao) nos-gerados-novo) 0))
+        ((not (null (car solucao))) (list (car solucao) nos-expandidos-novo nos-gerados-novo (penetrancia (car solucao) nos-gerados-novo) (ramificacao-media (car solucao) nos-gerados-novo)))
         ; Aplica recursividade para continuar a procurar
         (t (dfs-loop (car abertos-novo) objetivop funcao-sucessores operadores profundidade-max nos-expandidos-novo nos-gerados-novo (cdr abertos-recalculados) (append fechados-recalculados (list no-inicial))))
       )
     )
   )
-)
-
-(defun aestrela (no-inicial objetivo funcao-sucessores funcao-heuristica operadores &optional abertos fechados)
-  "Implementação do algoritmo A*. Recebe o nó inicial, o objetivo de pontuação, os nós sucessores, os operadores e como parâmetros opcionais a lista de abertos e fechados. Retorna uma lista com os nós que compõem o caminho, ou NIL."
-         ; Caso base: primeira chamada da função; profundidade é zero; o cavalo é colocado na primeira linha
-  (cond ((= (no-profundidade no-inicial) 0) 
-         (let* ((sucessores-no-inicial (sucessores-iniciais no-inicial))
-                (sucessores-no-inicial-heuristica (aplicar-heuristica sucessores-no-inicial funcao-heuristica (objetivo-valor objetivo)))
-                (sucessores-ordenados (ordena-nos-custo sucessores-no-inicial-heuristica)))
-          (aestrela (car sucessores-ordenados) objetivo funcao-sucessores funcao-heuristica operadores (cdr sucessores-ordenados) (append fechados (list no-inicial)))
-         )
-        )
-        ; Caso recursivo: executa a função normalmente, com recurso à função auxiliar
-        (t (aestrela-loop no-inicial objetivo funcao-sucessores funcao-heuristica operadores (length fechados) (1+ (length abertos)) abertos fechados))
-  )
-)
-
-(defun aestrela-loop (no-inicial objetivo funcao-sucessores funcao-heuristica operadores &optional (nos-expandidos 0) (nos-gerados 0) abertos fechados menor-custo)
-  "Função auxiliar para o algoritmo A*"
-         ; Lista de nós abertos juntamente com os nós fechados
-  (let* ((abertos-fechados (append abertos fechados))
-         ; Lista de nós sucessores gerados pelo nó passado como argumento através dos operadores
-         (sucessores-gerados (remover-se (lambda (suc) (no-existp suc abertos-fechados 'aestrela)) (funcall funcao-sucessores no-inicial operadores 'aestrela)))
-         ; Lista de nós sucessores com a heurística aplicada
-         (sucessores-heuristica (aplicar-heuristica sucessores-gerados funcao-heuristica (objetivo-valor objetivo)))
-         ; Gera a lista de nós que são solução
-         (solucao (list (apply #'append (mapcar (lambda (suc) (cond ((funcall (objetivo-funcao objetivo) suc) suc))) sucessores-heuristica))))
-         ; Gera a lista de nós abertos com os nós sucessores (que não constam na lista de nós abertos) adicionados
-         (abertos-novo (ordena-nos-custo (append abertos sucessores-heuristica)))
-         
-         (fechados-sem-no-inicial (remover-se (lambda (no) (null (no-pai no))) fechados))
-         
-         (menor-custo (no-custo (no-menor-custo (append abertos-novo fechados-sem-no-inicial))))
-         
-         (fechados-menor-custo (lista-nos-custo-menores-que fechados-sem-no-inicial menor-custo)))
-         ; TODO: criar lista abertos + fechados e remover fechado de abertos
-        (let ((nos-expandidos-novo (1+ nos-expandidos))
-              (nos-gerados-novo (+ nos-gerados (length sucessores-gerados))))
-          (cond 
-            ; Verifica se o nó inicial é solução, se for retorna-o
-            ((funcall (objetivo-funcao objetivo) no-inicial) (list no-inicial nos-expandidos-novo nos-gerados (penetrancia no-inicial nos-gerados) 0))
-            ; Verifica se a lista de nós abertos é nula, se for retorna NIL
-            ((null abertos-novo) (list nil nos-expandidos-novo nos-gerados-novo 0 0))
-            ; Verifica se a lista de nós solução não é nula, se não for retorna o 1º nó da lista
-            ((not (null (car solucao))) (list (car solucao) nos-expandidos-novo nos-gerados-novo (penetrancia (car solucao) nos-gerados-novo) 0))
-            ; Aplica recursividade para continuar a procurar
-            (t (aestrela-loop (car abertos-novo) objetivo funcao-sucessores funcao-heuristica operadores nos-expandidos-novo nos-gerados-novo (cdr abertos-novo) (append fechados (list no-inicial))))
-          )
-        )
-  )
-)
-
-(defun aestrela-teste ()
-  (aestrela (cria-no (tabuleiro-aleatorio)) (cria-objetivo 2000) 'sucessores 'heuristica-base (operadores))
 )
 
 ;;; Medidas de desempenho
@@ -459,3 +351,82 @@
   "Calcula a penetrância do resultado"
   (/ (no-profundidade no) nos-gerados)
 )
+
+;; Função que calcula o factor de ramificação médio
+(defun ramificacao-media (no nos-gerados)
+  "Calcula o factor de ramificação médio"
+  (let* ((comprimento-caminho (no-profundidade no))
+        (f (lambda (x) (- (/ (* x (- (expt x comprimento-caminho) 1)) (- x 1)) nos-gerados)))
+        (f-primeira-derivada (lambda (x) (/ (+ (- (* comprimento-caminho (expt x (+ comprimento-caminho 1))) (* (+ comprimento-caminho 1) (expt x comprimento-caminho))) 1) (expt (- x 1) 2))))
+       )
+    (newton-raphson f f-primeira-derivada 0 nos-gerados :maximum-number-of-iterations 100)
+  )
+)
+
+;; Função auxiliar que retorna a média dos valores fornecidos
+(defun media (lista)
+  "Função que retorna a média dos valores fornecidos"
+  (/ (apply #'+ lista) (length lista))
+)
+
+;; Função retirada de http://faculty.washington.edu/dbp/SAPACLISP-1.x/basic-math.lisp
+(defun Newton-Raphson
+       (f
+        f-prime
+        x-left
+        x-right
+        &key
+        (accuracy (* 10.0 single-float-epsilon))
+        (maximum-number-of-iterations 20)
+        (prevent-bracket-jumping-p t))
+  "given
+   [1] f (required)
+       ==> a function with a single argument
+   [2] f-prime (required)
+       ==> another function with a single argument,
+           this one being the first derivative of f
+   [3] x-left (required)
+       ==> left-hand bracket for the desired root;
+           i.e., left-hand bracket <= desired root
+   [4] x-right (required)
+       ==> right-hand bracket for the desired root;
+           i.e., desired root <= right-hand bracket
+   [5] accuracy (keyword; (* 10.0 single-float-epsilon))
+       ==> desired relative accuracy for computed rood
+   [6] maximum-number-of-iterations (keyword; 20)
+       ==> maximum number of iterations
+   [7] prevent-bracket-jumping-p (keyword; t)
+       ==> if t, allows Newton-Raphson to continue
+           if it jumps out of the interval
+           [x-left, x-right];
+           if nil, jumping out of the interval
+           causes an error to be signaled
+  returns
+   [1] a root of f in [x-left, x-right];
+       i.e., a value x in that interval
+       such that f(x) = 0
+   [2] the number of iterations required
+  ---
+  Note: this function is based loosely on rtnewt,
+  Section 9.4, Numerical Recipes, Second Edition"
+  (assert (< x-left x-right))
+  (let ((x (* 0.5 (+ x-left x-right)))
+        delta-x denom-for-accuracy-test)
+    (dotimes (j maximum-number-of-iterations
+                (if (not (cerror "returns solution so far"
+                                 "exceeding maximum number of iterations"))
+                  (values x maximum-number-of-iterations)))
+      (setf delta-x (/ (funcall f x)  (funcall f-prime x)))
+      (setf denom-for-accuracy-test (+ (abs x)
+                                       (abs (decf x delta-x))))
+      (cond
+       (prevent-bracket-jumping-p
+        (if (< x x-left) (setf x x-left))
+        (if (> x x-right) (setf x x-right))
+        (if (< (/ (abs delta-x) denom-for-accuracy-test) accuracy)
+          (return (values x (1+ j)))))
+       ((<= x-left x x-right)
+        (if (< (/ (abs delta-x) denom-for-accuracy-test) accuracy)
+          (return (values x (1+ j)))))
+       (t
+        (error "jumped out of brackets"))))))
