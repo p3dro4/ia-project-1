@@ -22,7 +22,7 @@
   "Carrega todos os ficheiros de código e define as funções necessárias"
   (carregar-ficheiros caminho)
   (carregar-funcao-problemas-dat caminho)
-  (carregar-funcao-experiencias-txt caminho)
+  (carregar-funcao-log-dat caminho)
   (carregar-funcao-recarregar caminho)
 )
 
@@ -52,17 +52,17 @@
 )
 
 ;; Função que carrega o ficheiro de experiencias
-(defun carregar-funcao-experiencias-txt (caminho)
+(defun carregar-funcao-log-dat (caminho)
   "Carrega o ficheiro de experiencias"
-  (defun experiencias-txt ()
-    (merge-pathnames "../experiencias.txt" caminho)
+  (defun log-dat ()
+    (merge-pathnames "../log.dat" caminho)
   )
 )
 
 ;; Função que limpa o ficheiro experiencias
 (defun limpar-experiencias ()
   "Limpa o ficheiro experiencias"
-  (with-open-file (ficheiro (experiencias-txt) :direction :output :if-exists :supersede :if-does-not-exist :create)
+  (with-open-file (ficheiro (log-dat) :direction :output :if-exists :supersede :if-does-not-exist :create)
     (format ficheiro "")
     (close ficheiro)
   )
@@ -173,7 +173,7 @@
 ;; do ficheiro experiencias.txt
 (defun ultimo-id-experiencia ()
   "Retorna o último id da experiência do ficheiro experiencias.txt"
-  (with-open-file (ficheiro (experiencias-txt) :direction :input :if-does-not-exist :create)
+  (with-open-file (ficheiro (log-dat) :direction :input :if-does-not-exist :create)
     (ultimo-id-experiencia-ficheiro ficheiro)
   )
 )
@@ -268,7 +268,7 @@
 
 ;; Função que escreve a experiência/resolução do problema fornecido
 ;; no saida fornecido (por default escreve no ficheiro experiencias.txt)
-(defun escreve-experiencia (experiencia &optional (saida (experiencias-txt)))
+(defun escreve-experiencia (experiencia &optional (saida (log-dat)))
   "Executa a experiencia/resolução do problema fornecido e escreve no ficheiro experiencias.txt"
   (let ((ultimo-id (ultimo-id-experiencia)))
     (cond ((pathnamep saida) 
