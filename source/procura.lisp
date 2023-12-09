@@ -309,10 +309,10 @@
          (sucessores-gerados (remover-se (lambda (suc) (no-existp suc abertos-fechados 'dfs)) (funcall funcao-sucessores no-inicial operadores 'dfs profundidade-max)))
          ; Lista de nós que são solução
          (solucao (list (apply #'append (mapcar (lambda (suc) (cond ((funcall objetivop suc) suc))) sucessores-gerados))))
-         ; Lista de nós abertos com os nós sucessores (que não constam na lista de nós abertos e fechados) adicionados
-         (abertos-novo (abertos-dfs abertos sucessores-gerados))
          ; Lista de nós abertos com as profundidades recalculadas
-         (abertos-recalculados (recalcular-profundidade sucessores-gerados abertos-novo))
+         (abertos-recalculados (recalcular-profundidade sucessores-gerados abertos))
+         ; Lista de nós abertos com os nós sucessores (que não constam na lista de nós abertos e fechados) adicionados
+         (abertos-novo (abertos-dfs abertos-recalculados sucessores-gerados))
          ; Lista de nós fechados com as profundidades recalculadas
          (fechados-recalculados (recalcular-profundidade sucessores-gerados fechados)))
     (let ((nos-expandidos-novo (1+ nos-expandidos))
@@ -325,7 +325,7 @@
         ; Verifica se a lista de nós solução não é nula, se não for retorna o 1º nó da lista
         ((not (null (car solucao))) (list (car solucao) nos-expandidos-novo nos-gerados-novo (penetrancia (car solucao) nos-gerados-novo) (ramificacao-media (car solucao) nos-gerados-novo)))
         ; Aplica recursividade para continuar a procurar
-        (t (dfs-loop (car abertos-novo) objetivop funcao-sucessores operadores profundidade-max nos-expandidos-novo nos-gerados-novo (cdr abertos-recalculados) (append fechados-recalculados (list no-inicial))))
+        (t (dfs-loop (car abertos-novo) objetivop funcao-sucessores operadores profundidade-max nos-expandidos-novo nos-gerados-novo (cdr abertos-novo) (append fechados-recalculados (list no-inicial))))
       )
     )
   )
