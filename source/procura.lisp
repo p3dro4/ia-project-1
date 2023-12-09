@@ -178,16 +178,6 @@
   )
 )
 
-;; Predicado que recebe uma lista de nós, um nó e opcionalmente um predicado (no-argumento no-atual),
-;; e retorna T se pertence à lista, caso contrário NIL
-(defun lista-contem-no-p (lista no &optional (pred (lambda (no no-atual) (equal no no-atual))))
-  "Predicado que verifica se um nó existe numa lista de nós"
-  (cond ((null lista) nil)
-        ((funcall pred no (car lista)) t)
-        (t (lista-contem-no-p (cdr lista) no))
-  )
-)
-
 ;; Função que recalcula a profundidade dos nós que se encontram em abertos ou fechados
 (defun recalcular-profundidade (lista-sucessores lista-nos &optional nos-recalculados)
   "Função que recalcula a profundidade dos nós que se encontram em abertos ou fechados"
