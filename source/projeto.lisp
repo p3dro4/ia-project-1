@@ -72,20 +72,30 @@
 
 ;; Função que executa a experiência/resolução do problema fornecido
 ;; e escreve no saida fornecido
-(defun executar-experiencia (problema &optional (max-profundidade 15))
+(defun executar-experiencia (problema)
     "Executa a experiencia/resolução do problema fornecido"
     (let ((resultado-bfs (executar-algoritmo-problema problema 'bfs))
-          (resultado-dfs (executar-algoritmo-problema problema 'dfs max-profundidade)))
-      (list problema resultado-bfs resultado-dfs)
+          (resultado-dfs (executar-algoritmo-problema problema 'dfs 20))
+          (resultado-aestrela (executar-algoritmo-problema problema 'aestrela 'heuristica-base)))
+      (list problema resultado-bfs resultado-dfs resultado-aestrela)
     )
 )
 
 ;; Função que executa o algoritmo de procura fornecido no problema fornecido
-(defun executar-algoritmo-problema (problema algoritmo &optional (max-profundidade 15))
+(defun executar-algoritmo-problema (problema algoritmo &optional (funcao-heuristica 'heuristica-base) (max-profundidade 20))
   "Executa o algoritmo de procura fornecido no problema fornecido"
   (cond ((null problema) nil)
+        ((equal algoritmo 'aestrela) (funcall algoritmo (cria-no (problema-tabuleiro problema)) (cria-objetivo (problema-objetivo problema)) 'sucessores funcao-heuristica (operadores)))
         (t (funcall algoritmo (cria-no (problema-tabuleiro problema)) (cria-objetivo (problema-objetivo problema)) 'sucessores (operadores) max-profundidade))
   )
+)
+
+;;; Construtor 
+
+;; Função que cria um problema
+(defun cria-problema (nome tabuleiro objetivo)
+  "Cria um problema"
+  (list nome tabuleiro objetivo)
 )
 
 ;;; Seletores
@@ -160,6 +170,12 @@
 (defun experiencia-resultado-dfs (experiencia)
   "Seleciona o resultado do DFS da experiência"
   (third experiencia)
+)
+
+;; Função que seleciona o resultado do A* da experiência
+(defun experiencia-resultado-aestrela (experiencia)
+  "Seleciona o resultado do A* da experiência"
+  (fourth experiencia)
 )
 
 ;; Funções Auxiliares
@@ -291,6 +307,8 @@
   (escreve-detalhes-resultado (experiencia-resultado-bfs experiencia) saida)
   (format saida "~45,1,,'-:@< DFS ~>~%" )
   (escreve-detalhes-resultado (experiencia-resultado-dfs experiencia) saida)
+  (format saida "~45,1,,'-:@< A* (Heuristica Base) ~>~%" )
+  (escreve-detalhes-resultado (experiencia-resultado-aestrela experiencia) saida)
   (format saida "~45,1,,'.:@< Fim experiencia ~>")
 )
 
