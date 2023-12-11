@@ -415,7 +415,6 @@
          ; Lista de nós abertos com as profundidades recalculadas
          (abertos-recalculados (recalcular-profundidade sucessores-gerados abertos))
          ; Lista de nós abertos com os nós sucessores (que não constam na lista de nós abertos e fechados) adicionados
-         ; TODO: Remover de fechados os nós que tiverem menor custo e colocar em abertos
          (abertos-novo (colocar-sucessores-em-abertos abertos-recalculados sucessores-gerados))
          ; Lista de nós fechados com as profundidades recalculadas
          (fechados-recalculados (recalcular-profundidade sucessores-gerados fechados)))
@@ -432,12 +431,6 @@
         (t (aestrela-loop (car abertos-novo) objetivo funcao-sucessores funcao-heuristica operadores nos-expandidos-novo nos-gerados-novo (cdr abertos-novo) (append fechados-recalculados (list no-inicial)) tempo-inicial))
       )
     )
-  )
-)
-
-(defun aestrela-teste ()
-  (let ((resultado (aestrela (cria-no (problema-tabuleiro (ler-problema 1)) 0 ) (cria-objetivo 60) 'sucessores 'heuristica-base (operadores))))
-    resultado
   )
 )
 
