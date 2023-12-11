@@ -8,10 +8,11 @@
 
 ;;; Construtor
 
-;; Cria um nó com o tabuleiro, o custo e o nó pai
-(defun cria-no (tabuleiro &optional (g 0) (h 0) (pai nil) (pontuacao 0))
-  "Cria um nó com o tabuleiro, o custo e o nó pai"
-  (list tabuleiro g h pai pontuacao)
+; TODO: Alterar estado nó para não ter a pontuação
+;; Cria um nó com o estado, o custo e o nó pai
+(defun cria-no (estado &optional (g 0) (h 0) (pai nil) (pontuacao 0))
+  "Cria um nó com o estado, o custo e o nó pai"
+  (list estado g h pai pontuacao)
 )
 
 ;;; Seletores
@@ -383,6 +384,7 @@
          (abertos-novo (colocar-sucessores-em-abertos abertos-recalculados sucessores-gerados))
          ; Lista de nós fechados com as profundidades recalculadas
          (fechados-recalculados (recalcular-profundidade sucessores-gerados fechados)))
+         ; FIXME: Remover nós que tenham sido alterados em fechados
     (let ((nos-expandidos-novo (1+ nos-expandidos))
           (nos-gerados-novo (+ nos-gerados (length sucessores-gerados))))
       (cond 
