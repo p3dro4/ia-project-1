@@ -133,9 +133,9 @@
 
 ;; Função que recebe um valor e retorna uma função lambda
 ;; que recebe um nó e verifica se a sua pontuação é maior ou igual ao valor dado
-(defun cria-objetivo (valor)
+(defun cria-objetivo (funcao valor)
   "Função que recebe um valor e retorna uma função lambda que recebe um nó e verifica se a sua pontuação é maior ou igual ao valor dado"
-  (list (lambda (no) (>= (no-pontuacao no) valor)) valor)
+  (list funcao valor)
 )
 
 ;; Função que retorna a função objetivo
@@ -169,24 +169,6 @@
 (defun colocar-sucessores-em-abertos (lista-abertos lista-sucessores)
   "Função que adiciona os nós sucessores à lista de nós abertos, inserindo-os por ordem crescente de custo"
   (ordenar-nos (append lista-abertos lista-sucessores))
-)
-
-;; Função que verifica se um nó existe numa lista de nós
-(defun no-existp (no lista algoritmo)
-  "Função que verifica se um nó existe numa lista de nós"
-  (cond
-   ((or (null no) (null lista)) nil)
-   ((or (equal algoritmo 'dfs) (equal algoritmo 'aestrela))
-      (cond ((equal (no-estado no) (no-estado (car lista))) 
-                (cond ((>= (no-custo no) (no-custo (car lista))) t)
-                      (t nil)
-                )
-            )
-            (t (no-existp no (cdr lista) algoritmo))))
-   (t (cond ((equal (no-estado no) (no-estado (car lista))))
-            (t (no-existp no (cdr lista) algoritmo)))
-    )
-  )
 )
 
 ;; Função que recalcula a profundidade dos nós que se encontram em abertos ou fechados
@@ -260,23 +242,6 @@
                  (t no2))
         )
   ) 
-)
-
-;;; Heurísticas
-
-;; Função que representa uma heurística base
-(defun heuristica-base (tabuleiro objetivo pontuacao-atual)
-  "Função que representa uma heurística base"
-  (let ((numeros (numeros-tabuleiro tabuleiro)))
-    (cond ((null numeros) 0)
-          (t (let ((heuristica (/ (- objetivo pontuacao-atual) (media numeros))))
-              (cond ((< heuristica 0) 0)
-                    (t heuristica)
-              )
-             )
-          )
-    )
-  )
 )
 
 ;;; Algoritmos de procura

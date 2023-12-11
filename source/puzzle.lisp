@@ -435,3 +435,40 @@
         (t (format saida "~a~a" (coluna-para-letra (second posicao)) (1+ (first posicao))))	
   ) 
 )
+
+;;;; Funções relacionadas com a resolução do problema
+
+;;; Heurísticas
+
+;; Função que representa uma heurística base
+(defun heuristica-base (tabuleiro objetivo pontuacao-atual)
+  "Função que representa uma heurística base"
+  (let ((numeros (numeros-tabuleiro tabuleiro)))
+    (cond ((null numeros) 0)
+          (t (let ((heuristica (/ (- objetivo pontuacao-atual) (media numeros))))
+              (cond ((< heuristica 0) 0)
+                    (t heuristica)
+              )
+             )
+          )
+    )
+  )
+)
+
+;; Função que verifica se um nó existe numa lista de nós
+(defun no-existp (no lista algoritmo)
+  "Função que verifica se um nó existe numa lista de nós"
+  (cond
+   ((or (null no) (null lista)) nil)
+   ((or (equal algoritmo 'dfs) (equal algoritmo 'aestrela))
+      (cond ((equal (no-estado no) (no-estado (car lista))) 
+                (cond ((>= (no-custo no) (no-custo (car lista))) t)
+                      (t nil)
+                )
+            )
+            (t (no-existp no (cdr lista) algoritmo))))
+   (t (cond ((equal (no-estado no) (no-estado (car lista))))
+            (t (no-existp no (cdr lista) algoritmo)))
+    )
+  )
+)
