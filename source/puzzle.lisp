@@ -406,13 +406,13 @@
 (defun escreve-tabuleiro-formatado (tabuleiro &optional (saida t) (numero-linha t) (letra-coluna t) (preenchimento-esquerda 0) (i 0))
   "Escreve o tabuleiro no ecrã formatado"
   (cond (letra-coluna (progn (cond (numero-linha (format saida "   "))) 
-                                (cond ((> preenchimento-esquerda 0) (format t "~v,a" preenchimento-esquera " ")))
+                                (cond ((> preenchimento-esquerda 0) (format t "~v,a" preenchimento-esquerda " ")))
                                 (format saida "   A   B   C   D   E   F   G   H   I   J~%") 
                                 (escreve-tabuleiro-formatado tabuleiro saida numero-linha nil preenchimento-esquerda i)))
         ((null tabuleiro) nil)
         ((>= i (length tabuleiro)) nil)
         (t (progn
-            (cond ((> preenchimento-esquerda 0) (format t "~v,a" preenchimento-esquera " ")))
+            (cond ((> preenchimento-esquerda 0) (format t "~v,a" preenchimento-esquerda " ")))
             (cond (numero-linha (format saida "~2,'0d " (1+ i))))
             (format saida "|" )
             (mapcar (lambda (cel) (cond 

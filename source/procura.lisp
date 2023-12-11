@@ -385,7 +385,7 @@
 (defun aestrela (no-inicial objetivo funcao-sucessores funcao-heuristica operadores &optional abertos fechados (tempo-inicial (get-internal-real-time)))
   "Implementação do algoritmo de procura A*. Recebe o nó inicial, o objetivo de pontuação, a função que calcula a heurística, os nós sucessores, os operadores e como parâmetros opcionais a lista de abertos e fechados. Retorna uma lista com os nós que compõem o caminho, ou NIL."
   (let ((heuristica (lambda (estado pontuacao) (funcall funcao-heuristica estado (objetivo-valor objetivo) pontuacao))))
-    (cond ((null no-inicial) error "Nó inicial não pode ser nulo")
+    (cond ((null no-inicial) (error "Nó inicial não pode ser nulo"))
         ((= (no-profundidade no-inicial) 0)
           (cond ((not (cavalo-colocado-p (no-estado no-inicial)))
                   (let ((sucessores-no-inicial (sucessores no-inicial (car operadores) 'aestrela 0 heuristica)))

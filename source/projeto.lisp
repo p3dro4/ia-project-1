@@ -16,14 +16,22 @@
   )
 )
 
+;; Função que carrega a função caminho-raiz
+(defun carregar-funcao-caminho-raiz (caminho)
+  "Carrega a função caminho-raiz"
+  (defun caminho-raiz ()
+    "Retorna o caminho raiz do projeto"
+    (make-pathname :directory (pathname-directory (merge-pathnames "../" caminho )))
+  )
+)
+
 ;; Função que carrega todos os ficheiros de código e
 ;; define as funções necessárias
 (defun carregar-componentes (caminho)
   "Carrega todos os ficheiros de código e define as funções necessárias"
   (carregar-ficheiros caminho)
-  (carregar-funcao-problemas-dat caminho)
-  (carregar-funcao-log-dat caminho)
   (carregar-funcao-recarregar caminho)
+  (carregar-funcao-caminho-raiz caminho)
 )
 
 ;; Função que carrega os ficheiros de código 
@@ -43,25 +51,21 @@
   )
 )
 
-;; Função carrega o ficheiro de problemas
-(defun carregar-funcao-problemas-dat (caminho)
-  "Carrega o ficheiro de problemas"
+;; Função que retorna o caminho do ficheiro problemas.dat
   (defun problemas-dat ()
-    (merge-pathnames "../problemas.dat" caminho)
+    "Retorna o caminho do ficheiro problemas.dat"
+    (merge-pathnames "problemas.dat" (caminho-raiz))
   )
-)
 
-;; Função que carrega o ficheiro de experiencias
-(defun carregar-funcao-log-dat (caminho)
-  "Carrega o ficheiro de experiencias"
+;; Função que retorna o caminho do ficheiro log.dat
   (defun log-dat ()
-    (merge-pathnames "../log.dat" caminho)
+    "Retorna o caminho do ficheiro log.dat"
+    (merge-pathnames "../log.dat" (caminho-raiz))
   )
-)
 
 ;; Função que limpa o ficheiro experiencias
-(defun limpar-experiencias ()
-  "Limpa o ficheiro experiencias"
+(defun limpar-log-dat ()
+  "Limpa o ficheiro log.dat"
   (with-open-file (ficheiro (log-dat) :direction :output :if-exists :supersede :if-does-not-exist :create)
     (format ficheiro "")
     (close ficheiro)
@@ -72,6 +76,7 @@
 
 ;; Função que executa a experiência/resolução do problema fornecido
 ;; e escreve no saida fornecido
+
 (defun executar-experiencia (problema)
     "Executa a experiencia/resolução do problema fornecido"
     (let ((resultado-bfs (executar-algoritmo-problema problema 'bfs))
