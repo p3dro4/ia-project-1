@@ -8,7 +8,6 @@
 
 ;;; Construtor
 
-; TODO: Alterar estado nó para não ter a pontuação
 ;; Cria um nó com o estado, o custo e o nó pai
 (defun cria-no (estado &optional (g 0) (h 0) (pai nil))
   "Cria um nó com o estado, o custo e o nó pai"
