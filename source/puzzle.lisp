@@ -304,6 +304,105 @@
   )
 )
 
+
+;; Função que retorna as posições percorridas pelo cavalo
+(defun no-estados-posicoes (no) 
+  "Função que retorna as posições percorridas pelo cavalo"
+  (cond ((null no) nil)
+        (t (let ((posicao (posicao-cavalo (no-estado no))))
+             (cond 
+              ((null posicao) (no-estados-posicoes (no-pai no)))
+              (t (append (list (list (first posicao) (second posicao))) (no-estados-posicoes (no-pai no))))
+             )
+           )
+        )
+  )
+)
+
+;; Função que retorna o caminho percorrido pelo cavalo
+(defun no-caminho (no &optional fim-inicio)
+  "Função que retorna o caminho percorrido pelo cavalo"
+  (cond ((null no) nil)
+        (fim-inicio (no-estados-posicoes no))
+        (t (reverse (no-estados-posicoes no)))
+  )
+)
+
+;;; Sucessores
+
+;; Função que retorna o sucessor de um nó com o operador dado como argumento
+(defun novo-sucessor (no operador funcao-heuristica)
+  "Função que retorna o sucessor de um nó com o operador dado como argumento"
+  (let ((estado-gerado (funcall operador (no-estado no))))
+    (cond
+     ((null estado-gerado) nil)
+     (t (let* ((posicao-destino (posicao-cavalo estado-gerado))
+               (valor-destino (celula (first posicao-destino) (second posicao-destino) (no-estado no)))
+               (pontuacao (+ (no-pontuacao no) valor-destino))
+               (g (1+ (no-profundidade no)))
+               (h (cond ((null funcao-heuristica) 0) (t (funcall funcao-heuristica estado-gerado pontuacao)))))
+          (cria-no estado-gerado g h no pontuacao)
+        )
+     )
+    )
+  )
+)
+
+;; Função que retorna a lista de sucessores de um nó
+(defun sucessores (no operadores algoritmo &optional (profundidade-max 0) funcao-heuristica)
+  "Função que retorna a lista de sucessores de um nó"
+  (cond ((null no) nil)
+        ((and (equal algoritmo 'dfs) (>= (no-profundidade no) profundidade-max)) nil)
+        ((atom operadores) (sucessores-iniciais no operadores funcao-heuristica))
+        (t (apply #'append (mapcar (lambda (op) 
+              (let ((sucessor (novo-sucessor no op funcao-heuristica)))
+                    (cond ((null sucessor) nil)
+                          (t (list sucessor))
+                    ))
+              ) operadores))
+        )
+  )
+)
+
+;; Função que retorna a lista de sucessores de um nó após a colocação inicial do cavalo
+(defun sucessores-iniciais (no op &optional funcao-heuristica (i 0))
+  "Função que retorna a lista de sucessores de um nó após a colocação inicial do cavalo"
+  (cond ((>= i (length (car (no-estado no)))) nil) 
+        (t (let* ((estado-gerado (funcall op (no-estado no) i))) 
+            (cond ((null estado-gerado) (sucessores-iniciais no op funcao-heuristica (1+ i)))
+                  (t (let* ((posicao-destino (posicao-cavalo estado-gerado))
+                            (valor-destino (celula (first posicao-destino) (second posicao-destino) (no-estado no)))
+                            (pontuacao (+ (no-pontuacao no) valor-destino)))   
+                      (append (list (cria-no estado-gerado (1+ (no-profundidade no)) (cond ((null funcao-heuristica) 0) (t (funcall funcao-heuristica estado-gerado pontuacao))) no pontuacao)) (sucessores-iniciais no op funcao-heuristica (1+ i)))
+                     )
+                  )
+            )
+          )
+        )
+  )
+)
+
+;; Objetivo
+
+;; Função que recebe um valor e retorna uma função lambda
+;; que recebe um nó e verifica se a sua pontuação é maior ou igual ao valor dado
+(defun cria-objetivo (funcao valor)
+  "Função que recebe um valor e retorna uma função lambda que recebe um nó e verifica se a sua pontuação é maior ou igual ao valor dado"
+  (list funcao valor)
+)
+
+;; Função que retorna a função objetivo
+(defun objetivo-funcao (objetivo)
+  "Função que retorna a função objetivo de um nó"
+  (first objetivo)
+)
+
+;; Função que retorna o valor do objetivo
+(defun objetivo-valor (objetivo)
+  "Função que retorna o valor objetivo de um nó"
+  (second objetivo)
+)
+
 ;;; Operadores
 
 ;; Função que retorna a lista de operadores aplicáveis a um estado.
