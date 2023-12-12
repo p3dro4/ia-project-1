@@ -397,9 +397,7 @@
 ;; que recebe um nó e verifica se a sua pontuação é maior ou igual ao valor dado
 (defun cria-objetivo (valor)
   "Função que recebe um valor e retorna uma função lambda que recebe um nó e verifica se a sua pontuação é maior ou igual ao valor dado"
-  (let ((funcao (lambda (no) (>= (no-pontuacao no) valor))))
-    (list funcao valor)
-  )
+  (lambda (no) (>= (no-pontuacao no) valor))
 )
 
 ;; Função que retorna a função objetivo
@@ -551,11 +549,11 @@
 ;;; Heurísticas
 
 ;; Função que representa uma heurística base
-(defun heuristica-base (tabuleiro objetivo)
+(defun heuristica-base (tabuleiro objetivo pontuacao)
   "Função que representa uma heurística base"
   (let ((numeros (numeros-tabuleiro tabuleiro)))
     (cond ((null numeros) 0)
-          (t (let ((heuristica (/ (- objetivo (no-pontuacao tabuleiro)) (media numeros))))
+          (t (let ((heuristica (/ (- objetivo pontuacao) (media numeros))))
               (cond ((< heuristica 0) 0)
                     (t heuristica)
               )
