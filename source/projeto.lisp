@@ -58,7 +58,7 @@
 ;; Função que retorna o caminho do ficheiro log.dat
   (defun log-dat ()
     "Retorna o caminho do ficheiro log.dat"
-    (merge-pathnames "../log.dat" (caminho-raiz))
+    (merge-pathnames "log.dat" (caminho-raiz))
   )
 
 ;; Função que limpa o ficheiro experiencias
@@ -121,40 +121,51 @@
   (third problema)
 )
 
+;; Função que seleciona o nome do algoritmo do resultado
+(defun resultado-nome-algoritmo (resultado)
+  "Seleciona o nome do algoritmo do resultado"
+  (first resultado)
+)
+
+(defun resultado-conteudo (resultado)
+  "Seleciona o conteúdo do resultado"
+  (second resultado)
+)
+
 ;; Função que seleciona o nó resultante do algoritmo de procura
 (defun resultado-no (resultado)
   "Seleciona o nó resultante do algoritmo de procura"
-  (first resultado)
+  (first (resultado-conteudo resultado))
 )
 
 ;; Função que seleciona o número de nós expandidos do resultado	
 (defun resultado-nos-expandidos (resultado)
   "Seleciona o número de nós expandidos do resultado"
-  (second resultado)
+  (second (resultado-conteudo resultado))
 )
 
 ;; Função que seleciona o número de nós gerados do resultado
 (defun resultado-nos-gerados (resultado)
   "Seleciona o número de nós gerados do resultado"
-  (third resultado)
+  (third (resultado-conteudo resultado))
 )
 
 ;; Função que seleciona a penetrância do resultado
 (defun resultado-penetrancia (resultado)
   "Seleciona a penetrância do resultado"
-  (fourth resultado)
+  (fourth (resultado-conteudo resultado))
 )
 
-;; Função que seleciona o factor de ramificação média do resultado
+;; Função que seleciona o fator de ramificação média do resultado
 (defun resultado-ramificacao-media (resultado)
-  "Seleciona o factor de ramificação média do resultado"
-  (fifth resultado)
+  "Seleciona o fator de ramificação média do resultado"
+  (fifth (resultado-conteudo resultado))
 )
 
 ;; Função que seleciona o tempo de execução do resultado
 (defun resultado-tempo-execucao (resultado)
   "Seleciona o tempo de execução do resultado"
-  (sixth resultado)
+  (sixth (resultado-conteudo resultado))
 )
 
 ;; Função que seleciona o problema da experiência
@@ -164,21 +175,9 @@
 )
 
 ;; Função que seleciona o resultado do BFS da experiência
-(defun experiencia-resultado-bfs (experiencia)
-  "Seleciona o resultado do BFS da experiência"
+(defun experiencia-resultado (experiencia)
+  "Seleciona o resultado da experiência"
   (second experiencia)
-)
-
-;; Função que seleciona o resultado do DFS da experiência
-(defun experiencia-resultado-dfs (experiencia)
-  "Seleciona o resultado do DFS da experiência"
-  (third experiencia)
-)
-
-;; Função que seleciona o resultado do A* da experiência
-(defun experiencia-resultado-aestrela (experiencia)
-  "Seleciona o resultado do A* da experiência"
-  (fourth experiencia)
 )
 
 ;; Funções Auxiliares
@@ -299,30 +298,29 @@
 ;; no saida fornecido
 (defun escreve-conteudo-experiencia (experiencia saida &optional (ultimo-id 0))
   "Escreve o conteúdo da experiencia/resolução do problema fornecido no saida fornecido"
-  (cond ((not (= ultimo-id 0)) (format saida "~%~%")))
+  (cond ((not (= ultimo-id 0)) (format saida "~%")))
   (format saida "~45,1,,'.:@< Inicio experiencia ~>~%")
   (cond ((streamp saida) (format saida "#~a - ~a~%" (1+ ultimo-id) (escreve-tempo (get-universal-time)))))
   (format saida "~45,1,,'=:@< ~a ~>~%" (problema-nome (experiencia-problema experiencia)))
   (escreve-tabuleiro-formatado (problema-tabuleiro (experiencia-problema experiencia)) saida)
   (format saida "Objetivo: ~a~%" (problema-objetivo (experiencia-problema experiencia)))
-  (format saida "~45,1,,'~:@< Algoritmos de procura ~>~%")
-  (format saida "~45,1,,'-:@< BFS ~>~%" )
-  (escreve-detalhes-resultado (experiencia-resultado-bfs experiencia) saida)
-  (format saida "~45,1,,'-:@< DFS ~>~%" )
-  (escreve-detalhes-resultado (experiencia-resultado-dfs experiencia) saida)
-  (format saida "~45,1,,'-:@< A* (Heuristica Base) ~>~%" )
-  (escreve-detalhes-resultado (experiencia-resultado-aestrela experiencia) saida)
-  (format saida "~45,1,,'.:@< Fim experiencia ~>")
+  (format saida "~45,1,,'~:@< Algoritmo de procura ~>~%")
+  (mapcar (lambda (resultado) 
+      (progn
+        (format saida "~45,1,,'-:@< ~a ~>~%" (resultado-nome-algoritmo resultado))
+        (escreve-detalhes-resultado resultado saida)
+      )
+    ) (experiencia-resultado experiencia))
+  (format saida "~45,1,,'.:@< Fim experiencia ~>~%")
 )
 
-(defun escreve-detalhes-resultado (resultado saida &optional (algoritmo "Desconhecido"))
+(defun escreve-detalhes-resultado (resultado saida)
   "Escreve os detalhes do resultado"
-  (format saida "~45,1,,'-:@< ~a ~>~%" algoritmo)
   (progn (format saida "Solucao: ") (cond ((not (null (resultado-no resultado))) (escreve-caminho (no-caminho (resultado-no resultado)) saida t)) (t (format saida "**SEM SOLUCAO**"))))
   (format saida "~%Nos expandidos: ~a~%" (resultado-nos-expandidos resultado))
   (format saida "Nos gerados: ~a~%" (resultado-nos-gerados resultado))
   (format saida "Penetrancia: ~,3f (~,1f%)~%" (resultado-penetrancia resultado) (* 100 (resultado-penetrancia resultado)))
-  (format saida "Factor de ramificacao media: ~,3f (~,1f%)~%" (resultado-ramificacao-media resultado) (* 100 (resultado-ramificacao-media resultado)))
+  (format saida "Fator de ramificacao media: ~,3f (~,1f%)~%" (resultado-ramificacao-media resultado) (* 100 (resultado-ramificacao-media resultado)))
   (format saida "Tempo de execucao: ~,6f seg.~%" (resultado-tempo-execucao resultado))
 )
 
@@ -391,15 +389,34 @@
   (format t "#~43,1,,:@<~>#~%")
   (format t "#~43,1,,:@<1 - Procura na largura (BFS)~>#~%")
   (format t "#~43,1,,:@<2 - Procura na profundidade (DFS)~>#~%")
-  (format t "#~43,1,,:@<3 - A*~>#~%")
+  (format t "#~43,1,,:@<3 - Algoritmo A*~>#~%")
+  (format t "#~43,1,,:@<4 - Todos os algoritmos~>#~%")
   (format t "#~43,1,,:@<0 - Voltar~>#~%")
   (format t "#~43,1,,:@<~>#~%")
   (format t "~45,1,,'#<~%~>")
-  (let ((opcao (ler-opcao 3)))
+  (let ((opcao (ler-opcao 4)))
     (cond ((= opcao 0) (escolher-problema))
-          ((= opcao 1) (progn (escreve-detalhes-resultado (executar-algoritmo-problema problema 'bfs) t "Procura na largura (BFS)") (voltar-ao-menu)))
+          ((= opcao 1) 
+            (let* ((resultado (executar-algoritmo-problema problema 'bfs))
+                   (experiencia (list problema (list (list "Procura na largura (BFS)" resultado)))))
+              (escreve-experiencia experiencia t)
+              (escreve-experiencia experiencia)
+              (executar-outro-algoritmo problema)
+            )
+          )
           ((= opcao 2) (escolher-profundidade problema))
           ((= opcao 3) (escolher-heuristica problema))
+          ((= opcao 4)
+            (let* ((profundidade (escolher-profundidade problema t))
+                   (resultado-bfs (executar-algoritmo-problema problema 'bfs))
+                   (resultado-dfs (executar-algoritmo-problema problema 'dfs profundidade))
+                   (resultado-aestrela (executar-algoritmo-problema problema 'aestrela 'heuristica-base))
+                   (experiencia (list problema (list (list "Procura na largura (BFS)" resultado-bfs) (list "Procura na profundidade (DFS)" resultado-dfs) (list "A* (Heuristica Base)" resultado-aestrela)))))
+              (escreve-experiencia experiencia t)
+              (escreve-experiencia experiencia)
+              (executar-outro-algoritmo problema)
+            )
+          )
     )
   )
 )
@@ -411,11 +428,21 @@
   )
 )
 
-(defun escolher-profundidade (problema)
+(defun escolher-profundidade (problema &optional retornar-profundidade)
   "Função que permite escolher a profundidade máxima"
   (format t "Profundidade maxima > ")
   (let ((profundidade (read)))
-    (cond ((and (integerp profundidade) (> profundidade 0)) (escreve-detalhes-resultado (executar-algoritmo-problema problema 'dfs profundidade) t "Procura na profundidade (DFS)") (voltar-ao-menu))
+    (cond ((and (integerp profundidade) (> profundidade 0)) 
+            (cond (retornar-profundidade profundidade)
+                  (t (let* ((resultado (executar-algoritmo-problema problema 'dfs profundidade))
+                        (experiencia (list problema (list (list "Procura na profundiade (DFS)" resultado)))))
+                    (escreve-experiencia experiencia t)
+                    (escreve-experiencia experiencia)
+                    (executar-outro-algoritmo problema)
+                    )
+                  )
+            )
+          )
           (t (progn (format t "~%Profundidade invalida!~%") (escolher-profundidade problema)))
     )
   )
@@ -433,14 +460,21 @@
   (format t "~45,1,,'#<~%~>")
   (let ((opcao (ler-opcao 1)))
     (cond ((= opcao 0) (escolher-algoritmo problema))
-          ((= opcao 1) (progn (escreve-detalhes-resultado (executar-algoritmo-problema problema 'aestrela 'heuristica-base) t "A* (Heuristica Base)") (voltar-ao-menu)))
+          ((= opcao 1) 
+            (let* ((resultado (executar-algoritmo-problema problema 'aestrela 'heuristica-base))
+                   (experiencia (list problema (list (list "A* (Heuristica Base)" resultado)))))
+              (escreve-experiencia experiencia t)
+              (escreve-experiencia experiencia)
+              (executar-outro-algoritmo problema)
+            )
+          )
     )
   )
 )
 
 (defun voltar-ao-menu ()
   "Função que permite voltar ao menu"
-  (format t "Voltar ao menu [sim(1) / nao(0)]? > ")
+  (format t "Voltar ao menu? [sim(1) / nao(0)] > ")
   (let ((opcao (read)))
     (cond ((= opcao 1) (iniciar))
           ((= opcao 0) (format t "A sair...~%"))
@@ -449,5 +483,15 @@
   )
 )
 
+(defun executar-outro-algoritmo (problema)
+  "Função que permite executar outro algoritmo para um mesmo problema"
+  (format t "Aplicar outro algoritmo ao mesmo problema?~%[sim(1) / nao(0)] > ")
+  (let ((opcao (read)))
+    (cond ((= opcao 1) (escolher-algoritmo problema))
+          ((= opcao 0) (voltar-ao-menu))
+          (t (voltar-ao-menu))
+    )
+  )
+)
 
 (inicializar) ; Inicializa o programa automaticamente
