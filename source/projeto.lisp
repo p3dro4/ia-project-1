@@ -88,8 +88,8 @@
 (defun executar-algoritmo-problema (problema algoritmo &optional (funcao-heuristica 'heuristica-base) (max-profundidade 20))
   "Executa o algoritmo de procura fornecido no problema fornecido"
   (cond ((null problema) nil)
-        ((equal algoritmo 'aestrela) (funcall algoritmo (cria-no (problema-tabuleiro problema)) (cria-objetivo (lambda (no) (>= (no-pontuacao no) (problema-objetivo problema))) (problema-objetivo problema)) 'sucessores funcao-heuristica (operadores)))
-        (t (funcall algoritmo (cria-no (problema-tabuleiro problema)) (cria-objetivo (lambda (no) (>= (no-pontuacao no) (problema-objetivo problema))) (problema-objetivo problema)) 'sucessores (operadores) max-profundidade))
+        ((equal algoritmo 'aestrela) (funcall algoritmo (cria-no (problema-tabuleiro problema)) (cria-objetivo (problema-objetivo problema)) 'sucessores funcao-heuristica (operadores)))
+        (t (funcall algoritmo (cria-no (problema-tabuleiro problema)) (cria-objetivo (problema-objetivo problema)) 'sucessores (operadores) max-profundidade))
   )
 )
 

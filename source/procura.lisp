@@ -10,16 +10,16 @@
 
 ; TODO: Alterar estado nó para não ter a pontuação
 ;; Cria um nó com o estado, o custo e o nó pai
-(defun cria-no (estado &optional (g 0) (h 0) (pai nil) (pontuacao 0))
+(defun cria-no (estado &optional (g 0) (h 0) (pai nil))
   "Cria um nó com o estado, o custo e o nó pai"
-  (list estado g h pai pontuacao)
+  (list estado g h pai)
 )
 
 ;;; Seletores
 
-;; Retorna o tabuleiro do nó dado como argumento
+;; Retorna o estado do nó dado como argumento
 (defun no-estado (no)
-  "Retorna o tabuleiro do nó dado como argumento"
+  "Retorna o estado do nó dado como argumento"
   (first no)
 )
 
@@ -103,10 +103,10 @@
   "Função que procura na estrutura do nó passado como argumento (o nó e os pais) e substitui o nó encontrado pelo nó substituto"
   (cond ((null (no-pai no)) nil)
         (t (cond ((equal (no-estado no) (no-estado no-substituto))
-                  (cria-no (no-estado no-substituto) (no-profundidade no-substituto) (no-heuristica no-substituto) (no-pai no) (no-pontuacao no-substituto)))
+                  (cria-no (no-estado no-substituto) (no-profundidade no-substituto) (no-heuristica no-substituto) (no-pai no)))
                  (t (let ((pai (procurar-e-substituir-no (no-pai no) no-substituto)))
                       (cond ((null pai) nil)
-                            (t (cria-no (no-estado no) (1+ (no-profundidade pai)) (no-heuristica no) pai (no-pontuacao no)))
+                            (t (cria-no (no-estado no) (1+ (no-profundidade pai)) (no-heuristica no) pai))
                       )
                     )
                  )

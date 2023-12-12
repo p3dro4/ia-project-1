@@ -304,7 +304,6 @@
   )
 )
 
-
 ;; Função que retorna as posições percorridas pelo cavalo
 (defun no-estados-posicoes (no) 
   "Função que retorna as posições percorridas pelo cavalo"
@@ -328,6 +327,16 @@
   )
 )
 
+(defun no-pontuacao (no &optional (pontuacao 0))
+  "Função que retorna a pontuação de um nó"
+  (cond ((null (no-pai no)) 0)
+        (t (let ((posicao (posicao-cavalo (no-estado no))))
+            (+ pontuacao (celula (first posicao) (second posicao) (no-estado (no-pai no))) (no-pontuacao (no-pai no) pontuacao))
+           )
+        )
+  )
+)
+
 ;;; Sucessores
 
 ;; Função que retorna o sucessor de um nó com o operador dado como argumento
@@ -341,7 +350,7 @@
                (pontuacao (+ (no-pontuacao no) valor-destino))
                (g (1+ (no-profundidade no)))
                (h (cond ((null funcao-heuristica) 0) (t (funcall funcao-heuristica estado-gerado pontuacao)))))
-          (cria-no estado-gerado g h no pontuacao)
+          (cria-no estado-gerado g h no)
         )
      )
     )
@@ -373,7 +382,7 @@
                   (t (let* ((posicao-destino (posicao-cavalo estado-gerado))
                             (valor-destino (celula (first posicao-destino) (second posicao-destino) (no-estado no)))
                             (pontuacao (+ (no-pontuacao no) valor-destino)))   
-                      (append (list (cria-no estado-gerado (1+ (no-profundidade no)) (cond ((null funcao-heuristica) 0) (t (funcall funcao-heuristica estado-gerado pontuacao))) no pontuacao)) (sucessores-iniciais no op funcao-heuristica (1+ i)))
+                      (append (list (cria-no estado-gerado (1+ (no-profundidade no)) (cond ((null funcao-heuristica) 0) (t (funcall funcao-heuristica estado-gerado pontuacao))) no)) (sucessores-iniciais no op funcao-heuristica (1+ i)))
                      )
                   )
             )
@@ -386,9 +395,11 @@
 
 ;; Função que recebe um valor e retorna uma função lambda
 ;; que recebe um nó e verifica se a sua pontuação é maior ou igual ao valor dado
-(defun cria-objetivo (funcao valor)
+(defun cria-objetivo (valor)
   "Função que recebe um valor e retorna uma função lambda que recebe um nó e verifica se a sua pontuação é maior ou igual ao valor dado"
-  (list funcao valor)
+  (let ((funcao (lambda (no) (>= (no-pontuacao no) valor))))
+    (list funcao valor)
+  )
 )
 
 ;; Função que retorna a função objetivo
