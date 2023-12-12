@@ -434,7 +434,7 @@
   (let ((profundidade (read)))
     (cond ((and (integerp profundidade) (> profundidade 0)) 
             (cond (retornar-profundidade profundidade)
-                  (t (let* ((resultado (executar-algoritmo-problema problema 'dfs profundidade))
+                  (t (let* ((resultado (executar-algoritmo-problema problema 'dfs nil profundidade))
                         (experiencia (list problema (list (list "Procura na profundiade (DFS)" resultado)))))
                     (escreve-experiencia experiencia t)
                     (escreve-experiencia experiencia)

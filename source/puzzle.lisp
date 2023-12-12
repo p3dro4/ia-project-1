@@ -551,11 +551,11 @@
 ;;; Heurísticas
 
 ;; Função que representa uma heurística base
-(defun heuristica-base (tabuleiro objetivo pontuacao-atual)
+(defun heuristica-base (tabuleiro objetivo)
   "Função que representa uma heurística base"
   (let ((numeros (numeros-tabuleiro tabuleiro)))
     (cond ((null numeros) 0)
-          (t (let ((heuristica (/ (- objetivo pontuacao-atual) (media numeros))))
+          (t (let ((heuristica (/ (- objetivo (no-pontuacao tabuleiro)) (media numeros))))
               (cond ((< heuristica 0) 0)
                     (t heuristica)
               )

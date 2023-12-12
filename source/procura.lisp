@@ -247,7 +247,7 @@
 ;; Algoritmo de procura A*
 (defun aestrela (no-inicial objetivo funcao-sucessores funcao-heuristica operadores &optional abertos fechados (tempo-inicial (get-internal-real-time)))
   "Implementação do algoritmo de procura A*. Recebe o nó inicial, o objetivo de pontuação, a função que calcula a heurística, os nós sucessores, os operadores e como parâmetros opcionais a lista de abertos e fechados. Retorna uma lista com os nós que compõem o caminho, ou NIL."
-  (let ((heuristica (lambda (estado pontuacao) (funcall funcao-heuristica estado (objetivo-valor objetivo) pontuacao))))
+  (let ((heuristica (lambda (estado) (funcall funcao-heuristica estado (objetivo-valor objetivo)))))
     (cond ((null no-inicial) (error "Nó inicial não pode ser nulo"))
         ((= (no-profundidade no-inicial) 0)
           (cond ((not (cavalo-colocado-p (no-estado no-inicial)))
@@ -269,10 +269,8 @@
 ;; Função auxiliar que implementa o algoritmo de procura A*
 (defun aestrela-loop (no-inicial objetivo funcao-sucessores funcao-heuristica operadores nos-expandidos nos-gerados abertos fechados tempo-inicial)
   "Função auxiliar para o algoritmo de procura em profundidade"
-         ; Lista de nós abertos juntamente com os nós fechados
-  (let* ((abertos-fechados (append abertos fechados))
          ; Lista de nós sucessores gerados pelo nó passado como argumento através dos operadores
-         (sucessores-gerados (remove-if (lambda (suc) (no-existp suc abertos-fechados 'aestrela)) (funcall funcao-sucessores no-inicial operadores 'aestrela 0 funcao-heuristica)))
+  (let* ((sucessores-gerados (remove-if (lambda (suc) (no-existp suc (append abertos fechados) 'aestrela)) (funcall funcao-sucessores no-inicial operadores 'aestrela 0 funcao-heuristica)))
          ; Lista de nós que são solução
          (solucao (list (apply #'append (mapcar (lambda (suc) (cond ((funcall objetivo suc) suc))) sucessores-gerados))))
          ; Lista de nós abertos com as profundidades recalculadas
@@ -281,7 +279,7 @@
          (abertos-novo (colocar-sucessores-em-abertos abertos-recalculados sucessores-gerados))
          ; Lista de nós fechados com as profundidades recalculadas
          (fechados-recalculados (recalcular-profundidade sucessores-gerados fechados)))
-         ; FIXME: Remover nós que tenham sido alterados em fechados
+    (format t "~a~%" (remove-if (lambda (no) (member no fechados)) fechados-recalculados))
     (let ((nos-expandidos-novo (1+ nos-expandidos))
           (nos-gerados-novo (+ nos-gerados (length sucessores-gerados))))
       (cond 
