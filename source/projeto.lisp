@@ -89,7 +89,8 @@
   "Executa o algoritmo de procura fornecido no problema fornecido"
   (cond ((null problema) nil)
         ((equal algoritmo 'aestrela) (funcall algoritmo (cria-no (problema-tabuleiro problema)) (cria-objetivo (problema-objetivo problema)) 'sucessores funcao-heuristica (operadores)))
-        (t (funcall algoritmo (cria-no (problema-tabuleiro problema)) (cria-objetivo (problema-objetivo problema)) 'sucessores (operadores) max-profundidade))
+        ((equal algoritmo 'dfs) (funcall algoritmo (cria-no (problema-tabuleiro problema)) (cria-objetivo (problema-objetivo problema)) 'sucessores (operadores) max-profundidade))
+        (t (funcall algoritmo (cria-no (problema-tabuleiro problema)) (cria-objetivo (problema-objetivo problema)) 'sucessores (operadores)))
   )
 )
 
@@ -333,6 +334,20 @@
         (t (progn (escreve-posicao (car caminho) saida) (format saida "->") (escreve-caminho (cdr caminho) saida enrolar (1+ i))))     
   )
 )
+
+(defun escreve-problema-ficheiro (problema &optional (saida (merge-pathnames "teste.dat" (caminho-raiz))))
+  "Escreve o problema no ficheiro problemas.dat"
+  (let ((ultimo-id (ultimo-id-problema)))
+    (cond ((pathnamep saida) 
+          (with-open-file (ficheiro saida :direction :output :if-exists :append :if-does-not-exist :create)
+            (escreve-conteudo-problema problema ficheiro ultimo-id)
+            (close ficheiro)
+          ))
+          (t (escreve-conteudo-problema problema saida))
+    )
+  )
+)
+
 
 ;;; Interface com o utilizador
 

@@ -358,17 +358,17 @@
 )
 
 ;; Função que retorna a lista de sucessores de um nó
-(defun sucessores (no operadores algoritmo &optional (profundidade-max 0) funcao-heuristica)
+(defun sucessores (no funcao-sucessores algoritmo &optional (profundidade-max 0) funcao-heuristica)
   "Função que retorna a lista de sucessores de um nó"
   (cond ((null no) nil)
         ((and (equal algoritmo 'dfs) (>= (no-profundidade no) profundidade-max)) nil)
-        ((atom operadores) (sucessores-iniciais no operadores funcao-heuristica))
+        ((and (= (no-profundidade no) 0) (not (cavalo-colocado-p (no-estado no)))) (sucessores-iniciais no (car funcao-sucessores) funcao-heuristica))
         (t (apply #'append (mapcar (lambda (op) 
               (let ((sucessor (novo-sucessor no op funcao-heuristica)))
                     (cond ((null sucessor) nil)
                           (t (list sucessor))
                     ))
-              ) operadores))
+              ) (cdr funcao-sucessores)))
         )
   )
 )
