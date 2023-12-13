@@ -230,7 +230,7 @@
                   ; Verifica se a lista de nós solução não é nula, se não for retorna o 1º nó da lista
                   ((not (null (car solucao))) (list (car solucao) nos-expandidos-novo nos-gerados-novo (penetrancia (car solucao) nos-gerados-novo) (ramificacao-media (car solucao) nos-gerados-novo) (/ (- (get-internal-real-time) tempo-inicial) internal-time-units-per-second)))
                   ; Aplica recursividade para continuar a procurar
-                  (t (aestrela-loop (car abertos-novo) objetivop funcao-sucessores funcao-heuristica operadores nos-expandidos-novo nos-gerados-novo (cdr abertos-novo) (append fechados-recalculados (list no-inicial)) tempo-inicial))
+                  (t (aestrela (car abertos-novo) objetivop funcao-sucessores funcao-heuristica operadores nos-expandidos-novo nos-gerados-novo (cdr abertos-novo) (append fechados-recalculados (list no-inicial)) tempo-inicial))
                 )
               )
             )
