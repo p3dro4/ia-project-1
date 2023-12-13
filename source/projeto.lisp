@@ -70,22 +70,10 @@
   )
 )
 
-;;; Executar experiência 
-
-;; Função que executa a experiência/resolução do problema fornecido
-;; e escreve no saida fornecido
-
-(defun executar-experiencia (problema)
-    "Executa a experiencia/resolução do problema fornecido"
-    (let ((resultado-bfs (executar-algoritmo-problema problema 'bfs))
-          (resultado-dfs (executar-algoritmo-problema problema 'dfs 20))
-          (resultado-aestrela (executar-algoritmo-problema problema 'aestrela 'heuristica-base)))
-      (list problema resultado-bfs resultado-dfs resultado-aestrela)
-    )
-)
+;;; Executar algoritmo de procura
 
 ;; Função que executa o algoritmo de procura fornecido no problema fornecido
-(defun executar-algoritmo-problema (problema algoritmo &optional (funcao-heuristica 'heuristica-base) (max-profundidade 20))
+(defun executar-algoritmo-problema (problema algoritmo &key funcao-heuristica max-profundidade)
   "Executa o algoritmo de procura fornecido no problema fornecido"
   (cond ((null problema) nil)
         ((equal algoritmo 'aestrela) (funcall algoritmo (cria-no (problema-tabuleiro problema)) (cria-objetivo (problema-objetivo problema)) 'sucessores funcao-heuristica (operadores)))
@@ -409,7 +397,7 @@
   (format t "#~43,1,,:@<0 - Voltar~>#~%")
   (format t "#~43,1,,:@<~>#~%")
   (format t "~45,1,,'#<~%~>")
-  (let ((opcao (ler-opcao 4)))
+  (let ((opcao (ler-opcao 4 "Algoritmo > ")))
     (cond ((= opcao 0) (escolher-problema))
           ((= opcao 1) 
             (let* ((resultado (executar-algoritmo-problema problema 'bfs))
@@ -424,8 +412,8 @@
           ((= opcao 4)
             (let* ((profundidade (escolher-profundidade problema t))
                    (resultado-bfs (executar-algoritmo-problema problema 'bfs))
-                   (resultado-dfs (executar-algoritmo-problema problema 'dfs profundidade))
-                   (resultado-aestrela (executar-algoritmo-problema problema 'aestrela (lambda (estado pontuacao) (funcall 'heuristica-base estado (problema-objetivo problema) pontuacao))))
+                   (resultado-dfs (executar-algoritmo-problema problema 'dfs :max-profundidade profundidade))
+                   (resultado-aestrela (executar-algoritmo-problema problema 'aestrela :funcao-heuristica (lambda (estado pontuacao) (funcall 'heuristica-base estado (problema-objetivo problema) pontuacao))))
                    (experiencia (list problema (list (list "Procura na largura (BFS)" resultado-bfs) (list "Procura na profundidade (DFS)" resultado-dfs) (list "A* (Heuristica Base)" resultado-aestrela)))))
               (escreve-experiencia experiencia t)
               (escreve-experiencia experiencia)
@@ -449,7 +437,7 @@
   (let ((profundidade (read)))
     (cond ((and (integerp profundidade) (> profundidade 0)) 
             (cond (retornar-profundidade profundidade)
-                  (t (let* ((resultado (executar-algoritmo-problema problema 'dfs nil profundidade))
+                  (t (let* ((resultado (executar-algoritmo-problema problema 'dfs :max-profundidade profundidade))
                         (experiencia (list problema (list (list "Procura na profundiade (DFS)" resultado)))))
                     (escreve-experiencia experiencia t)
                     (escreve-experiencia experiencia)
@@ -473,10 +461,10 @@
   (format t "#~43,1,,:@<0 - Voltar~>#~%")
   (format t "#~43,1,,:@<~>#~%")
   (format t "~45,1,,'#<~%~>")
-  (let ((opcao (ler-opcao 1)))
+  (let ((opcao (ler-opcao 1 "Heuristica > ")))
     (cond ((= opcao 0) (escolher-algoritmo problema))
           ((= opcao 1) 
-            (let* ((resultado (executar-algoritmo-problema problema 'aestrela (lambda (estado pontuacao) (funcall 'heuristica-base estado (problema-objetivo problema) pontuacao))))
+            (let* ((resultado (executar-algoritmo-problema problema 'aestrela :funcao-heuristica (lambda (estado pontuacao) (funcall 'heuristica-base estado (problema-objetivo problema) pontuacao))))
                    (experiencia (list problema (list (list "A* (Heuristica Base)" resultado)))))
               (escreve-experiencia experiencia t)
               (escreve-experiencia experiencia)
@@ -491,8 +479,11 @@
   "Função que permite voltar ao menu"
   (format t "Voltar ao menu? [sim(1) / nao(0)] > ")
   (let ((opcao (read)))
-    (cond ((= opcao 1) (iniciar))
-          ((= opcao 0) (format t "A sair...~%"))
+    (cond ((and (integerp opcao) (or (= opcao 0) (= opcao 1)))
+            (cond ((= opcao 1) (iniciar))
+                  ((= opcao 0) (format t "A sair...~%"))
+                  (t (voltar-ao-menu))
+            ))
           (t (voltar-ao-menu))
     )
   )
@@ -502,10 +493,12 @@
   "Função que permite executar outro algoritmo para um mesmo problema"
   (format t "Aplicar outro algoritmo ao mesmo problema?~%[sim(1) / nao(0)] > ")
   (let ((opcao (read)))
-    (cond ((= opcao 1) (escolher-algoritmo problema))
-          ((= opcao 0) (voltar-ao-menu))
-          (t (voltar-ao-menu))
-    )
+    (cond ((and (integerp opcao) (or (= opcao 0) (= opcao 1)))
+            (cond ((= opcao 1) (escolher-algoritmo problema))
+                  ((= opcao 0) (voltar-ao-menu))
+                  (t (voltar-ao-menu))
+            ))
+          (t (executar-outro-algoritmo problema)))
   )
 )
 
