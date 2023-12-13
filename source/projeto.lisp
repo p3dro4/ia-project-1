@@ -169,23 +169,23 @@
 
 ;; Funções Auxiliares
 
-;; Função que retorna o último id da experiência
+;; Função que retorna o último id
 ;; do ficheiro experiencias.txt
-(defun ultimo-id-experiencia ()
+(defun ultimo-id (&optional (caminho (log-dat)))
   "Retorna o último id da experiência do ficheiro experiencias.txt"
-  (with-open-file (ficheiro (log-dat) :direction :input :if-does-not-exist :create)
-    (ultimo-id-experiencia-ficheiro ficheiro)
+  (with-open-file (ficheiro caminho :direction :input :if-does-not-exist :create)
+    (ultimo-id-ficheiro ficheiro)
   )
 )
 
-;; Função axuiliar que retorna o último id da experiência
-(defun ultimo-id-experiencia-ficheiro (ficheiro &optional (ultimo-id 0))
+;; Função axuiliar que retorna o último id
+(defun ultimo-id-ficheiro (ficheiro &optional (ultimo-id 0))
   "Retorna o último id da experiência"
   (let ((linha (read-line ficheiro nil)))
     (cond ((null linha) ultimo-id)
-          ((equal linha "") (ultimo-id-experiencia-ficheiro ficheiro ultimo-id))
-          ((equal (subseq linha 0 1) "#") (ultimo-id-experiencia-ficheiro ficheiro (obter-id-linha linha ultimo-id)))
-          (t (ultimo-id-experiencia-ficheiro ficheiro ultimo-id))
+          ((equal linha "") (ultimo-id-ficheiro ficheiro ultimo-id))
+          ((equal (subseq linha 0 1) "#") (ultimo-id-ficheiro ficheiro (obter-id-linha linha ultimo-id)))
+          (t (ultimo-id-ficheiro ficheiro ultimo-id))
     )
   )
 )
@@ -215,34 +215,34 @@
 ;; Função que lê o ficheiro de problemas e devolve o problema n
 (defun ler-problema (n &optional (ficheiro (problemas-dat)))
   "Lê o ficheiro de problemas e devolve o problema n"
-  (with-open-file (stream ficheiro :direction :input :if-does-not-exist nil)
-    (ler-ficheiro-problemas stream n)
+  (with-open-file (ficheiro ficheiro :direction :input :if-does-not-exist nil)
+    (ler-ficheiro-problemas ficheiro n)
   )
 )
 
 ;; Função que lê as linhas do ficheiro de problemas e se encontrar o problema n
 ;; chama a função ler-propriedades-problema
-(defun ler-ficheiro-problemas (stream n)
+(defun ler-ficheiro-problemas (ficheiro n)
   "Lê as linhas do ficheiro de problemas"
-  (let ((linha (read-line stream nil)))
+  (let ((linha (read-line ficheiro nil)))
     (cond ((null linha) nil)
-          ((equal linha (format nil "~a~a" "#" (write-to-string n))) (ler-propriedades-problema stream))
-          (t (ler-ficheiro-problemas stream n ))
+          ((equal linha (format nil "~a~a" "#" (write-to-string n))) (ler-propriedades-problema ficheiro))
+          (t (ler-ficheiro-problemas ficheiro n ))
     )
   )
 )
 
 ;; Função que lê as propriedades do problema e devolve uma lista com o nome,
 ;; o tabuleiro e o objetivo
-(defun ler-propriedades-problema (stream &optional (nome "**SEM NOME**") (tabuleiro "") (objetivo nil))
+(defun ler-propriedades-problema (ficheiro &optional (nome "**SEM NOME**") (tabuleiro "") (objetivo nil))
   "Lê as propriedades do problema"
-  (let ((linha (read-line stream nil)))
-    (cond ((equal linha "") (ler-propriedades-problema stream nome tabuleiro objetivo))
+  (let ((linha (read-line ficheiro nil)))
+    (cond ((equal linha "") (ler-propriedades-problema ficheiro nome tabuleiro objetivo))
           ((null linha) (list nome (read-from-string tabuleiro) objetivo))
           ((equal (subseq linha 0 1) "#") (list nome (read-from-string tabuleiro) objetivo))
-          ((equal (subseq linha 0 5) "Nome:") (ler-propriedades-problema stream (subseq linha 6) tabuleiro objetivo))
-          ((equal (subseq linha 0 9) "Objetivo:") (ler-propriedades-problema stream nome tabuleiro (parse-integer (subseq linha 10))))
-          (t (ler-propriedades-problema stream nome (format nil "~a~a" tabuleiro linha) objetivo))
+          ((equal (subseq linha 0 5) "Nome:") (ler-propriedades-problema ficheiro (subseq linha 6) tabuleiro objetivo))
+          ((equal (subseq linha 0 9) "Objetivo:") (ler-propriedades-problema ficheiro nome tabuleiro (parse-integer (subseq linha 10))))
+          (t (ler-propriedades-problema ficheiro nome (format nil "~a~a" tabuleiro linha) objetivo))
     )
   )
 ) 
@@ -263,6 +263,16 @@
   "Escreve o tempo fornecido no formato dd/mm/aaaa @ hh:mm:ss"
   (multiple-value-bind (segundos minutos horas dia mes ano) (decode-universal-time tempo-universal)
     (format saida "~2,'0d/~2,'0d/~2,'0d @ ~2,'0d:~2,'0d:~2,'0d" dia mes ano horas minutos segundos)
+  )
+)
+
+;; Função que escreve o caminho percorrido
+(defun escreve-caminho (caminho &optional (saida t) enrolar (i 0))
+  "Função que escreve o caminho percorrido"
+  (cond ((null caminho) nil)
+        ((and enrolar (= i 9)) (progn (format saida "~%~9<~>") (escreve-caminho caminho saida enrolar 0)))
+        ((= (length caminho) 1) (escreve-posicao (car caminho) saida))
+        (t (progn (escreve-posicao (car caminho) saida) (format saida "->") (escreve-caminho (cdr caminho) saida enrolar (1+ i))))     
   )
 )
 
@@ -301,6 +311,7 @@
   (format saida "~45,1,,'.:@< Fim experiencia ~>~%")
 )
 
+;; Função que escreve os detalhes do resultado
 (defun escreve-detalhes-resultado (resultado saida)
   "Escreve os detalhes do resultado"
   (progn (format saida "Solucao: ") (cond ((not (null (resultado-no resultado))) (escreve-caminho (no-caminho (resultado-no resultado)) saida t)) (t (format saida "**SEM SOLUCAO**"))))
@@ -311,29 +322,57 @@
   (format saida "Tempo de execucao: ~,6f seg.~%" (resultado-tempo-execucao resultado))
 )
 
-;; Função que escreve o caminho percorrido
-(defun escreve-caminho (caminho &optional (saida t) enrolar (i 0))
-  "Função que escreve o caminho percorrido"
-  (cond ((null caminho) nil)
-        ((and enrolar (= i 9)) (progn (format saida "~%~9<~>") (escreve-caminho caminho saida enrolar 0)))
-        ((= (length caminho) 1) (escreve-posicao (car caminho) saida))
-        (t (progn (escreve-posicao (car caminho) saida) (format saida "->") (escreve-caminho (cdr caminho) saida enrolar (1+ i))))     
+;; Função que escreve o problema fornecido
+(defun escreve-problema (problema &optional (saida t) id)
+  "Escreve o problema fornecido"
+  (cond ((not (null id))
+          (cond ((not (= id 1)) (format saida "~%#~a~%" id))
+                (t (format saida "#~a~%" id))))
   )
+  (format saida "Nome: ~a~%" (problema-nome problema))
+  (progn (format saida "(") (escreve-tabuleiro (problema-tabuleiro problema) saida) (format saida ")~%"))
+  (format saida "Objetivo: ~a~%" (problema-objetivo problema))
 )
 
-(defun escreve-problema-ficheiro (problema &optional (saida (merge-pathnames "teste.dat" (caminho-raiz))))
+;; Função que escreve o problema no ficheiro problemas.dat
+(defun escreve-problema-ficheiro (problema &optional (saida (problemas-dat)))
   "Escreve o problema no ficheiro problemas.dat"
-  (let ((ultimo-id (ultimo-id-problema)))
-    (cond ((pathnamep saida) 
-          (with-open-file (ficheiro saida :direction :output :if-exists :append :if-does-not-exist :create)
-            (escreve-conteudo-problema problema ficheiro ultimo-id)
-            (close ficheiro)
-          ))
-          (t (escreve-conteudo-problema problema saida))
+  (let ((id (1+ (ultimo-id (problemas-dat)))))
+    (cond ((existe-problema-nome (problema-nome problema)) (reescrever-problema problema saida))
+          (t (with-open-file (ficheiro saida :direction :io :if-exists :append :if-does-not-exist :create)
+                (progn (escreve-problema problema ficheiro id) (close ficheiro))))
     )
   )
 )
 
+;; Função que reescreve o problema no ficheiro problemas.dat
+(defun reescrever-problema (problema saida)
+  "Rescreve o problema no ficheiro problemas.dat"
+  (let ((problemas (ler-todos-problemas)))
+    (with-open-file (ficheiro saida :direction :output :if-exists :supersede :if-does-not-exist :create)
+      (procurar-e-rescrever problema ficheiro problemas)
+      (close ficheiro)
+    )
+  )
+)
+
+;; Função que procura e rescreve o problema no ficheiro problemas.dat
+(defun procurar-e-rescrever (problema ficheiro problemas &optional (id 1))
+  "Procura e rescreve o problema no ficheiro problemas.dat"
+  (cond ((null problemas) nil)
+        ((equal (problema-nome problema) (problema-nome (car problemas))) (progn (escreve-problema problema ficheiro id) (procurar-e-rescrever problema ficheiro (cdr problemas) (1+ id))))
+        (t (progn (escreve-problema (car problemas) ficheiro id) (procurar-e-rescrever problema ficheiro (cdr problemas) (1+ id))))
+  )
+)
+
+;; Função que verifica se existe um problema com o nome fornecido
+(defun existe-problema-nome (nome &optional (problemas (ler-todos-problemas)))
+  "Verifica se existe um problema com o nome fornecido"
+  (cond ((null problemas) nil)
+        ((equal (string-capitalize nome) (string-capitalize (problema-nome (car problemas)))) t)
+        (t (existe-problema-nome nome (cdr problemas)))
+  )
+)
 
 ;;; Interface com o utilizador
 

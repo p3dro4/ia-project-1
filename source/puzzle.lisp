@@ -504,6 +504,7 @@
 (defun escreve-tabuleiro (tabuleiro &optional (saida t))
   "Escreve o tabuleiro no ecrã"
   (cond ((null tabuleiro) nil)
+        ((= (length tabuleiro) 1) (format saida "~a" (car tabuleiro)))
         (t (progn (format saida "~a~%" (car tabuleiro)) (escreve-tabuleiro (cdr tabuleiro) saida)))
   )
 )
