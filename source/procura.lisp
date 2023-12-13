@@ -219,6 +219,7 @@
                   (abertos-novo (colocar-sucessores-em-abertos abertos-recalculados sucessores-gerados))
                   ; Lista de nós fechados com as profundidades recalculadas
                   (fechados-recalculados (recalcular-profundidade sucessores-gerados fechados)))
+                  ; TODO: Adicionar nós de fechados, que foram recalculados, a abertos
               (let ((nos-expandidos-novo (1+ nos-expandidos))
                     (nos-gerados-novo (+ nos-gerados (length sucessores-gerados))))
                 (cond 

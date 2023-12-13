@@ -2,8 +2,6 @@
 ;;;; Código relacionado com o problema.   
 ;;;; Autores: 202100230 - Pedro Anjos, 202100225 - André Meseiro
 
-; TODO: Rever comentérios
-
 ;;; Tabuleiros
 
 ;; Função que retorna um tabuleiro predefinido.
