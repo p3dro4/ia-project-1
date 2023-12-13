@@ -147,16 +147,20 @@
 ;; Algoritmo de procura em largura
 (defun bfs (no-inicial objetivop funcao-sucessores operadores &optional abertos fechados (tempo-inicial (get-internal-real-time)))
   "Implementação do algoritmo de procura em largura. Recebe o nó inicial, o objetivo de pontuação, os nós sucessores, os operadores e como parâmetros opcionais a lista de abertos e fechados. Retorna uma lista com os nós que compõem o caminho, ou NIL."
-        ; Caso base: primeira chamada da função; profundidade é zero; o cavalo é colocado na primeira linha
+  ; Caso base: primeira chamada da função; profundidade é zero; o cavalo é colocado na primeira linha
   (cond ((null no-inicial) (error "Nó inicial não pode ser nulo"))
         ((= (no-profundidade no-inicial) 0)
           (cond ((not (cavalo-colocado-p (no-estado no-inicial)))
+                  ; Se o cavalo ainda não foi colocado, geram-se os sucessores do nó inicial
                   (let ((sucessores-no-inicial (funcall funcao-sucessores no-inicial (car operadores) 'bfs)))
+                    ; Se não há sucessores, retorna uma lista vazia e informações sobre a execução
                     (cond ((null sucessores-no-inicial) (list nil 1 0 0 0 (/ (- (get-internal-real-time) tempo-inicial) internal-time-units-per-second)))
+                          ; Caso contrário, retorna uma lista e informações sobre a execução
                           (t (bfs (car sucessores-no-inicial) objetivop funcao-sucessores (cdr operadores) (cdr sucessores-no-inicial) (append fechados (list no-inicial)) tempo-inicial))
                     )
                   )
                 )
+                ; Chama recursivamente a função auxiliar com o nó inicial
                 (t (bfs-loop no-inicial objetivop funcao-sucessores (cdr operadores) (length fechados) (1+ (length abertos)) abertos fechados tempo-inicial))
           )
         )
@@ -168,7 +172,7 @@
 ;; Função auxiliar que implementa o algoritmo de procura em largura
 (defun bfs-loop (no-inicial objetivop funcao-sucessores operadores nos-expandidos nos-gerados abertos fechados tempo-inicial)
   "Função auxiliar para o algoritmo de procura em largura"
-         ; Gera a lista de nós sucessores, gerados pelo nó passado como argumento, através dos operadores
+  ; Gera a lista de nós sucessores, gerados pelo nó passado como argumento, através dos operadores
   (let* ((sucessores-gerados (remove-if (lambda (suc) (no-existp suc fechados 'bfs)) (funcall funcao-sucessores no-inicial operadores 'bfs)))
          ; Gera a lista de nós que são solução
          (solucao (list (apply #'append (mapcar (lambda (suc) (cond ((funcall objetivop suc) suc))) sucessores-gerados))))
@@ -195,16 +199,20 @@
 ;; Algoritmo de procura em profundidade
 (defun dfs (no-inicial objetivop funcao-sucessores operadores profundidade-max &optional abertos fechados (tempo-inicial (get-internal-real-time)))
   "Implementação do algoritmo de procura em largura. Recebe o nó inicial, o objetivo de pontuação, os nós sucessores, os operadores e como parâmetros opcionais a lista de abertos e fechados. Retorna uma lista com os nós que compõem o caminho, ou NIL."
-         ; Caso base: primeira chamada da função; profundidade é zero; o cavalo é colocado na primeira linha
+  ; Caso base: primeira chamada da função; a profundidade é zero; o cavalo é colocado na primeira linha
   (cond ((null no-inicial) (error "Nó inicial não pode ser nulo"))
         ((= (no-profundidade no-inicial) 0)
           (cond ((not (cavalo-colocado-p (no-estado no-inicial)))
+                  ; Se o cavalo ainda não foi colocado, geram-se os sucessores do nó inicial
                   (let ((sucessores-no-inicial (sucessores no-inicial (car operadores) 'dfs profundidade-max)))
+                    ; Se não há sucessores, retorna uma lista vazia e informações sobre a execução
                     (cond ((null sucessores-no-inicial) (list nil 1 0 0 0 (/ (- (get-internal-real-time) tempo-inicial) internal-time-units-per-second)))
+                          ; Caso contrário, retorna uma lista e informações sobre a execução
                           (t (dfs (car sucessores-no-inicial) objetivop funcao-sucessores (cdr operadores) profundidade-max (cdr sucessores-no-inicial) (append fechados (list no-inicial)) tempo-inicial))
                     )
                   )
                 )
+                ; Chama recursivamente a função auxiliar com o nó inicial
                 (t (dfs-loop no-inicial objetivop (cdr operadores) profundidade-max (length fechados) (1+ (length abertos)) abertos fechados tempo-inicial))
           )
         )
@@ -216,7 +224,7 @@
 ;; Função auxiliar que implementa o algoritmo de procura em profundidade
 (defun dfs-loop (no-inicial objetivop funcao-sucessores operadores profundidade-max nos-expandidos nos-gerados abertos fechados tempo-inicial)
   "Função auxiliar para o algoritmo de procura em profundidade"
-         ; Lista de nós abertos juntamente com os nós fechados
+  ; Lista de nós abertos juntamente com os nós fechados
   (let* ((abertos-fechados (append abertos fechados))
          ; Lista de nós sucessores gerados pelo nó passado como argumento através dos operadores
          (sucessores-gerados (remove-if (lambda (suc) (no-existp suc abertos-fechados 'dfs)) (funcall funcao-sucessores no-inicial operadores 'dfs profundidade-max)))
@@ -248,14 +256,19 @@
 (defun aestrela (no-inicial objetivop funcao-sucessores funcao-heuristica operadores &optional abertos fechados (tempo-inicial (get-internal-real-time)))
   "Implementação do algoritmo de procura A*. Recebe o nó inicial, o objetivo de pontuação, a função que calcula a heurística, os nós sucessores, os operadores e como parâmetros opcionais a lista de abertos e fechados. Retorna uma lista com os nós que compõem o caminho, ou NIL."
   (cond ((null no-inicial) (error "Nó inicial não pode ser nulo"))
+        ; Verifica se a profundidade do nó inicial é 0
         ((= (no-profundidade no-inicial) 0)
           (cond ((not (cavalo-colocado-p (no-estado no-inicial)))
+                ; Se o cavalo ainda não foi colocado, geram-se os sucessores do nó inicial
                 (let ((sucessores-no-inicial (sucessores no-inicial (car operadores) 'aestrela 0 funcao-heuristica)))
+                   ; Se não há sucessores, retorna uma lista vazia e informações sobre a execução
                   (cond ((null sucessores-no-inicial) (list nil 1 0 0 0 (/ (- (get-internal-real-time) tempo-inicial) internal-time-units-per-second)))
+                        ; Chama recursivamente a função com o primeiro sucessor
                         (t (aestrela (car sucessores-no-inicial) objetivop funcao-sucessores funcao-heuristica (cdr operadores) (cdr sucessores-no-inicial) (append fechados (list no-inicial)) tempo-inicial))
                   )
                 )
               )
+              ; Chama recursivamente a função auxiliar com o nó inicial
               (t (aestrela-loop no-inicial objetivop funcao-sucessores funcao-heuristica (cdr operadores) (length fechados) (1+ (length abertos)) abertos fechados tempo-inicial))
           )
         )
@@ -267,7 +280,7 @@
 ;; Função auxiliar que implementa o algoritmo de procura A*
 (defun aestrela-loop (no-inicial objetivop funcao-sucessores funcao-heuristica operadores nos-expandidos nos-gerados abertos fechados tempo-inicial)
   "Função auxiliar para o algoritmo de procura em profundidade"
-         ; Lista de nós sucessores gerados pelo nó passado como argumento através dos operadores
+  ; Lista de nós sucessores gerados pelo nó passado como argumento através dos operadores
   (let* ((sucessores-gerados (remove-if (lambda (suc) (no-existp suc (append abertos fechados) 'aestrela)) (funcall funcao-sucessores no-inicial operadores 'aestrela 0 funcao-heuristica)))
          ; Lista de nós que são solução
          (solucao (list (apply #'append (mapcar (lambda (suc) (cond ((funcall objetivop suc) suc))) sucessores-gerados))))
