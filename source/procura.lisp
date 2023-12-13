@@ -147,7 +147,7 @@
   "Implementação do algoritmo de procura em largura. Recebe o nó inicial, o objetivo de pontuação, os nós sucessores e os operadores. Retorna uma lista com os nós que compõem o caminho, ou NIL."
   ; Gera a lista de nós sucessores, gerados pelo nó passado como argumento, através dos operadores
   (cond ((null no-inicial) (error "Nó inicial não pode ser nulo"))
-                  ; Lista de nós abertos juntamente com os nós fechados
+        ; Lista de nós abertos juntamente com os nós fechados
         (t (let* ((sucessores-gerados (remove-if (lambda (suc) (no-existp suc fechados 'bfs)) (funcall funcao-sucessores no-inicial operadores 'bfs)))
                   ; Gera a lista de nós que são solução
                   (solucao (list (apply #'append (mapcar (lambda (suc) (cond ((funcall objetivop suc) suc))) sucessores-gerados))))
@@ -175,7 +175,7 @@
 (defun dfs (no-inicial objetivop funcao-sucessores operadores profundidade-max &optional (nos-expandidos 0) (nos-gerados 0) abertos fechados (tempo-inicial (get-internal-real-time)))
   "Implementação do algoritmo de procura em largura. Recebe o nó inicial, o objetivo de pontuação, os nós sucessores, os operadores. Retorna uma lista com os nós que compõem o caminho, ou NIL."
   (cond ((null no-inicial) (error "Nó inicial não pode ser nulo"))
-                  ; Lista de nós abertos juntamente com os nós fechados
+        ; Lista de nós abertos juntamente com os nós fechados
         (t (let* ((abertos-fechados (append abertos fechados))
                   ; Lista de nós sucessores gerados pelo nó passado como argumento através dos operadores
                   (sucessores-gerados (remove-if (lambda (suc) (no-existp suc abertos-fechados 'dfs)) (funcall funcao-sucessores no-inicial operadores 'dfs profundidade-max)))
@@ -209,7 +209,7 @@
 (defun aestrela (no-inicial objetivop funcao-sucessores funcao-heuristica operadores &optional (nos-expandidos 0) (nos-gerados 0) abertos fechados (tempo-inicial (get-internal-real-time)))
   "Implementação do algoritmo de procura A*. Recebe o nó inicial, o objetivo de pontuação, a função que calcula a heurística, os nós sucessores, os operadores e como parâmetros opcionais a lista de abertos e fechados. Retorna uma lista com os nós que compõem o caminho, ou NIL."
   (cond ((null no-inicial) (error "Nó inicial não pode ser nulo"))
-                  ; Lista de nós sucessores gerados pelo nó passado como argumento através dos operadores
+        ; Lista de nós sucessores gerados pelo nó passado como argumento através dos operadores
         (t (let* ((sucessores-gerados (remove-if (lambda (suc) (no-existp suc (append abertos fechados) 'aestrela)) (funcall funcao-sucessores no-inicial operadores 'aestrela 0 funcao-heuristica)))
                   ; Lista de nós que são solução
                   (solucao (list (apply #'append (mapcar (lambda (suc) (cond ((funcall objetivop suc) suc))) sucessores-gerados))))
