@@ -107,7 +107,10 @@
 ;; resultado: T
 (defun celula (i j tabuleiro)
   "Retorna o valor da celula (i,j) do tabuleiro"
-  (nth j (nth i tabuleiro))
+  (cond ((or (< i 0) (< j 0)) nil)
+        ((or (>= i (length tabuleiro)) (>= j (length (linha i tabuleiro)))) nil)
+        (t (nth j (nth i tabuleiro)))
+  )
 )
 
 ;;; Funções auxiliares
@@ -559,6 +562,28 @@
              )
           )
     )
+  )
+)
+
+(defun heuristica-base-melhorada (tabuleiro objetivo pontuacao)
+  "Função que representa uma heurística base melhorada"
+
+)
+
+(defun numeros-redor-cavalo (tabuleiro &optional (i -2) (j -2) numeros)
+  "Função que retorna os números em redor do cavalo (5x5)"
+  (cond ((null tabuleiro) nil)
+        (t (cond ((not (cavalo-colocado-p tabuleiro)) nil)
+                 ((> i 2) (remove-if (lambda (num) (null num)) numeros))
+                 ((> j 2) (numeros-redor-cavalo tabuleiro (1+ i) -2 numeros))
+                 (t (let ((posicao (posicao-cavalo tabuleiro)))
+                      (cond ((and (= i 0) (= j 0)) (numeros-redor-cavalo tabuleiro i (1+ j) numeros))
+                            (t (numeros-redor-cavalo tabuleiro i (1+ j) (cons (celula (+ (first posicao) i) (+ (second posicao) j) tabuleiro) numeros)))    
+                      )
+                    )
+                 )
+            )
+        )
   )
 )
 
