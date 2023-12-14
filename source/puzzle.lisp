@@ -586,21 +586,3 @@
         )
   )
 )
-
-;; Função que verifica se um nó existe numa lista de nós
-(defun no-existp (no lista algoritmo)
-  "Função que verifica se um nó existe numa lista de nós"
-  (cond
-   ((or (null no) (null lista)) nil)
-   ((or (equal algoritmo 'dfs) (equal algoritmo 'aestrela))
-      (cond ((equal (no-estado no) (no-estado (car lista))) 
-                (cond ((>= (no-custo no) (no-custo (car lista))) t)
-                      (t nil)
-                )
-            )
-            (t (no-existp no (cdr lista) algoritmo))))
-   (t (cond ((equal (no-estado no) (no-estado (car lista))))
-            (t (no-existp no (cdr lista) algoritmo)))
-    )
-  )
-)
