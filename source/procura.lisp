@@ -58,7 +58,7 @@
                 )
             )
             (t (no-existp no (cdr lista) algoritmo))))
-   (t (cond ((equal (no-estado no) (no-estado (car lista))))
+   (t (cond ((equal (no-estado no) (no-estado (car lista))) t)
             (t (no-existp no (cdr lista) algoritmo)))
     )
   )

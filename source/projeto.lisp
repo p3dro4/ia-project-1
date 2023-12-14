@@ -298,6 +298,7 @@
 (defun escreve-experiencia (experiencia &optional (saida (log-dat)))
   "Executa a experiencia/resolução do problema fornecido e escreve no ficheiro experiencias.txt"
   (let ((id (ultimo-id)))
+    (cond ((>= id 25) (limpar-log-dat)))
     (cond ((pathnamep saida) 
           (with-open-file (ficheiro saida :direction :output :if-exists :append :if-does-not-exist :create)
             (escreve-conteudo-experiencia experiencia ficheiro id)
