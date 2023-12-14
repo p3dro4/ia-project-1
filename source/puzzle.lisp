@@ -305,6 +305,8 @@
   )
 )
 
+;;; Nós do espaço de estados
+
 ;; Função que retorna as posições percorridas pelo cavalo
 (defun no-estados-posicoes (no) 
   "Função que retorna as posições percorridas pelo cavalo"
@@ -328,6 +330,7 @@
   )
 )
 
+;; Função que retorna a pontuação de um nó
 (defun no-pontuacao (no &optional (pontuacao 0))
   "Função que retorna a pontuação de um nó"
   (cond ((null (no-pai no)) 0)
@@ -335,6 +338,24 @@
             (+ pontuacao (celula (first posicao) (second posicao) (no-estado (no-pai no))) (no-pontuacao (no-pai no) pontuacao))
            )
         )
+  )
+)
+
+;; Função que verifica se um nó existe numa lista de nós
+(defun no-existp (no lista algoritmo)
+  "Função que verifica se um nó existe numa lista de nós"
+  (cond
+   ((or (null no) (null lista)) nil)
+   ((or (equal algoritmo 'dfs) (equal algoritmo 'aestrela))
+      (cond ((equal (no-estado no) (no-estado (car lista))) 
+                (cond ((>= (no-custo no) (no-custo (car lista))) t)
+                      (t nil)
+                )
+            )
+            (t (no-existp no (cdr lista) algoritmo))))
+   (t (cond ((equal (no-estado no) (no-estado (car lista))) t)
+            (t (no-existp no (cdr lista) algoritmo)))
+    )
   )
 )
 
