@@ -566,8 +566,19 @@
 )
 
 (defun heuristica-base-melhorada (tabuleiro objetivo pontuacao)
-  "Função que representa uma heurística base melhorada"
-
+  ""
+  (let* ((media-numeros (media (numeros-tabuleiro tabuleiro)))
+         (numeros-redor (numeros-redor-cavalo tabuleiro)))
+    (cond ((null media-numeros) 0)
+          ((null numeros-redor) (/ (- objetivo pontuacao) media-numeros))
+          (t (let ((heuristica (/ (- objetivo pontuacao) (media numeros-redor))))
+              (cond ((< heuristica 0) 0)
+                    (t (* media-numeros heuristica))
+              )
+             )
+          )
+    )
+  )
 )
 
 (defun numeros-redor-cavalo (tabuleiro &optional (i -2) (j -2) numeros)
@@ -581,26 +592,8 @@
                             (t (numeros-redor-cavalo tabuleiro i (1+ j) (cons (celula (+ (first posicao) i) (+ (second posicao) j) tabuleiro) numeros)))    
                       )
                     )
-                 )
+                  )
             )
         )
-  )
-)
-
-;; Função que verifica se um nó existe numa lista de nós
-(defun no-existp (no lista algoritmo)
-  "Função que verifica se um nó existe numa lista de nós"
-  (cond
-   ((or (null no) (null lista)) nil)
-   ((or (equal algoritmo 'dfs) (equal algoritmo 'aestrela))
-      (cond ((equal (no-estado no) (no-estado (car lista))) 
-                (cond ((>= (no-custo no) (no-custo (car lista))) t)
-                      (t nil)
-                )
-            )
-            (t (no-existp no (cdr lista) algoritmo))))
-   (t (cond ((equal (no-estado no) (no-estado (car lista))))
-            (t (no-existp no (cdr lista) algoritmo)))
-    )
   )
 )
