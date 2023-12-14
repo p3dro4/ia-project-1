@@ -206,6 +206,7 @@
 )
 
 ;; Algoritmo de procura A*
+; FIXME: Não está a conseguir gerar soluções para certos problemas
 (defun aestrela (no-inicial objetivop funcao-sucessores funcao-heuristica operadores &optional (nos-expandidos 0) (nos-gerados 0) abertos fechados (tempo-inicial (get-internal-real-time)))
   "Implementação do algoritmo de procura A*. Recebe o nó inicial, o objetivo de pontuação, a função que calcula a heurística, os nós sucessores, os operadores e como parâmetros opcionais a lista de abertos e fechados. Retorna uma lista com os nós que compõem o caminho, ou NIL."
   (cond ((null no-inicial) (error "Nó inicial não pode ser nulo"))
@@ -247,13 +248,23 @@
 )
 
 ;; Função que calcula o factor de ramificação médio
-(defun ramificacao-media (no nos-gerados)
+(defun ramificacao-media (no nos-gerados &optional (erro 0.0001) (intervalo-min 0) (intervalo-max 1000))
   "Calcula o factor de ramificação médio"
+  (let ((intervalo-medio (/ (+ intervalo-min intervalo-max) 2))
+        (comprimento-caminho (no-profundidade no)))
+    (cond 
+     ((< (- intervalo-max intervalo-min) erro) (/ (+ intervalo-max intervalo-min) 2))
+     ((< (polinomio intervalo-medio comprimento-caminho nos-gerados) 0) (ramificacao-media no nos-gerados erro intervalo-medio intervalo-max))
+     (t  (ramificacao-media no nos-gerados erro intervalo-min intervalo-medio))))
+)
+
+(defun ramificacao-media-newton-raphson (no nos-gerados)
+  "Calcula o factor de ramificação médio através do método de Newton-Raphson"
   (let* ((comprimento-caminho (no-profundidade no))
         (f (lambda (x) (- (/ (* x (- (expt x comprimento-caminho) 1)) (- x 1)) nos-gerados)))
         (f-primeira-derivada (lambda (x) (/ (+ (- (* comprimento-caminho (expt x (+ comprimento-caminho 1))) (* (+ comprimento-caminho 1) (expt x comprimento-caminho))) 1) (expt (- x 1) 2))))
        )
-    (newton-raphson f f-primeira-derivada 0 nos-gerados :maximum-number-of-iterations 100)
+    (newton-raphson f f-primeira-derivada 0 nos-gerados :maximum-number-of-iterations 150)
   )
 )
 
@@ -263,6 +274,13 @@
   (/ (apply #'+ lista) (length lista))
 )
 
+;; Função que representa o calculo do factor de ramificação médio através de um polinómio
+(defun polinomio (ramificacao comprimento-caminho nos-gerados)
+  "B + B^2 + ... + B^L=T, onde B é o fator médio de ramificação, L é o comprimento do caminho e T é o número de nós gerados."
+  (cond ((= 1 comprimento-caminho) (- ramificacao nos-gerados))
+        (t (+ (expt ramificacao comprimento-caminho) (polinomio ramificacao (- comprimento-caminho 1) nos-gerados))))
+)
+
 ;; Função retirada de http://faculty.washington.edu/dbp/SAPACLISP-1.x/basic-math.lisp
 (defun Newton-Raphson
        (f
@@ -270,7 +288,7 @@
         x-left
         x-right
         &key
-        (accuracy (* 10.0 single-float-epsilon))
+        (accuracy (* 10.0 long-float-epsilon))
         (maximum-number-of-iterations 20)
         (prevent-bracket-jumping-p t))
   "given
