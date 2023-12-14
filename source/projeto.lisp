@@ -203,11 +203,11 @@
 ;;; Leitura
 
 ;; Função que lê o ficheiro de problemas e devolve uma lista com todos os problemas
-(defun ler-todos-problemas (&optional (i 1) problemas (ficheiro (problemas-dat)))
+(defun ler-todos-problemas (&optional (ficheiro (problemas-dat)) (i 1) problemas )
   "Lê todos os problemas"
   (let ((problema (ler-problema i ficheiro)))
     (cond ((null problema) problemas)
-          (t (ler-todos-problemas (+ i 1) (append problemas (list problema)) ficheiro))
+          (t (ler-todos-problemas ficheiro (+ i 1) (append problemas (list problema))))
     )
   )
 )
@@ -246,6 +246,23 @@
     )
   )
 ) 
+
+(defun restaurar-backup-problemas-dat (&optional (ficheiro (merge-pathnames "problemas.bak" (caminho-raiz))))
+  "Restaura o ficheiro problemas.dat"
+  (let ((problemas (ler-todos-problemas ficheiro)))
+    (with-open-file (ficheiro (problemas-dat) :direction :output :if-exists :supersede :if-does-not-exist :create)
+      (restaurar-backup-problemas problemas ficheiro)
+      (close ficheiro)
+    )
+  )
+)
+
+(defun restaurar-backup-problemas (problemas ficheiro &optional (i 1))
+  "Restaura os problemas no ficheiro problemas.dat"
+  (cond ((null problemas) nil)
+        (t (progn (escreve-problema (car problemas) ficheiro i) (restaurar-backup-problemas (cdr problemas) ficheiro (1+ i))))
+  )
+)
 
 ;;; Escrita
 
@@ -334,6 +351,13 @@
   (format saida "Objetivo: ~a~%" (problema-objetivo problema))
 )
 
+(defun escreve-problema-formatado (problema &optional (saida t))
+  "Escreve o problema fornecido"
+  (format t "~45,1,,'#:@< ~a ~>~%" (problema-nome problema))
+  (escreve-tabuleiro-formatado (problema-tabuleiro problema))
+  (format t "Objetivo: ~a~%" (problema-objetivo problema))
+)
+
 ;; Função que escreve o problema no ficheiro problemas.dat
 (defun escreve-problema-ficheiro (problema &optional (saida (problemas-dat)))
   "Escreve o problema no ficheiro problemas.dat"
@@ -381,15 +405,47 @@
   "Função que inicializa a interface com o utilizador"
   (format t "~45,1,,'#:@< Jogo do Cavalo ~>~%")
   (format t "#~43,1,,:@<~>#~%")
-  (format t "#~43,1,,:@<1 - Criar problema   ~>#~%")
+  (format t "#~43,1,,:@<1 - Gerir problemas   ~>#~%")
   (format t "#~43,1,,:@<2 - Escolher problema~>#~%")
   (format t "#~43,1,,:@<0 - Sair da aplicacao~>#~%")
   (format t "#~43,1,,:@<~>#~%")
   (format t "~45,1,,'#<~%~>")
   (let ((opcao (ler-opcao 2)))
-    (cond ((= opcao 1) (criar-problema))
+    (cond ((= opcao 1) (gerir-problemas))
           ((= opcao 2) (escolher-problema))
           ((= opcao 0) (format t "A sair...~%"))
+    )
+  )
+)
+
+(defun gerir-problemas ()
+  "Função que permite gerir os problemas"
+  (format t "~45,1,,'#:@< Gerir problemas ~>~%")
+  (format t "#~43,1,,:@<~>#~%")
+  (format t "#~43,1,,:@<1 - Criar problema~>#~%")
+  (format t "#~43,1,,:@<2 - Listar problemas~>#~%")
+  (format t "#~43,1,,:@<3 - Restaurar backup~>#~%")
+  (format t "#~43,1,,:@<0 - Voltar~>#~%")
+  (format t "#~43,1,,:@<~>#~%")
+  (format t "~45,1,,'#<~%~>")
+  (let ((opcao (ler-opcao 3)))
+    (cond ((= opcao 1) (criar-problema))
+          ((= opcao 2) (listar-problemas))
+          ((= opcao 3) (restaurar-backup))
+          ((= opcao 0) (iniciar))
+    )
+  )
+)
+
+(defun restaurar-backup ()
+  "Função que permite restaurar o backup"
+  (format t "Restaurar backup? [sim(1) / nao(0)] > ")
+  (let ((opcao (read)))
+    (cond ((and (integerp opcao) (or (= opcao 0) (= opcao 1)))
+            (cond ((= opcao 1) (progn (restaurar-backup-problemas-dat) (format t "Backup restaurado!~%") (gerir-problemas)))
+                  ((= opcao 0) (voltar-ao-menu))
+            ))
+          (t (restaurar-backup))
     )
   )
 )
@@ -404,7 +460,7 @@
   (format t "#~43,1,,:@<~>#~%")
   (format t "~45,1,,'#<~%~>")
   (let ((opcao (ler-opcao 2)))
-    (cond ((= opcao 0) (iniciar))
+    (cond ((= opcao 0) (gerir-problemas))
           ((= opcao 1) (progn (format t "Operacao nao implementada!~%") (criar-problema)))
           ((= opcao 2) (criar-problema-gerar-tabuleiro))
     )
@@ -470,6 +526,14 @@
           ((equal objetivo "") (progn (format t "Objetivo invalido!~%") (escolher-objetivo)))
           (t (progn (format t "Objetivo invalido!~%") (escolher-objetivo)))
     )
+  )
+)
+
+(defun listar-problemas ()
+  "Função que permite listar os problemas"
+  (let ((problemas (ler-todos-problemas)))
+    (mapcar (lambda (problema) (progn (escreve-problema-formatado problema)(format t "~%"))) problemas)
+    (voltar-ao-menu)
   )
 )
 
