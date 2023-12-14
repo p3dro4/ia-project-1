@@ -46,24 +46,6 @@
 
 ;;; Funções auxiliares e de ordenação de nós
 
-;; Função que verifica se um nó existe numa lista de nós
-(defun no-existp (no lista algoritmo)
-  "Função que verifica se um nó existe numa lista de nós"
-  (cond
-   ((or (null no) (null lista)) nil)
-   ((or (equal algoritmo 'dfs) (equal algoritmo 'aestrela))
-      (cond ((equal (no-estado no) (no-estado (car lista))) 
-                (cond ((>= (no-custo no) (no-custo (car lista))) t)
-                      (t (no-existp no (cdr lista) algoritmo))
-                )
-            )
-            (t (no-existp no (cdr lista) algoritmo))))
-   (t (cond ((equal (no-estado no) (no-estado (car lista))) t)
-            (t (no-existp no (cdr lista) algoritmo)))
-    )
-  )
-)
-
 ;; Função que adiciona os nós sucessores à lista de nós abertos,
 ;; inserindo-os no fim da lista
 (defun abertos-bfs (lista-abertos lista-sucessores)
