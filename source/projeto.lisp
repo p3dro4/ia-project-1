@@ -580,7 +580,7 @@
   (format t "#~43,1,,:@<0 - Voltar~>#~%")
   (format t "#~43,1,,:@<~>#~%")
   (format t "~45,1,,'#<~%~>")
-  (let ((opcao (ler-opcao 5 "Algoritmo > ")))
+  (let ((opcao (ler-opcao 6 "Algoritmo > ")))
     (cond ((= opcao 0) (escolher-problema))
           ((= opcao 1) 
             (let* ((resultado (executar-algoritmo-problema problema 'bfs))
@@ -642,6 +642,8 @@
 (defun escolher-heuristica (problema &optional (algoritmo (list "A*" 'aestrela)))
   "Função que permite escolher a heurística"
   (format t "~45,1,,'#:@< ~a ~>~%" (problema-nome problema))
+  (format t "#~43,1,,:@<~>#~%")
+  (format t "#~43,1,,:@<=== Algoritmo ~a ===~>#~%" (first algoritmo))
   (format t "#~43,1,,:@<~>#~%")
   (format t "#~43,1,,:@<Heuristica a usar:~>#~%")
   (format t "#~43,1,,:@<~>#~%")

@@ -226,20 +226,12 @@
 
 ;; Função que recebe o tabuleiro e o valor a procurar e
 ;; retorna a posição (i j) em que se encontra o valor. Caso o valor não se encontre no tabuleiro deverá ser retornado NIL.
-(defun posicao-valor (tabuleiro valor &optional (i 0) (j 0))
+(defun posicao-valor (tabuleiro valor &optional (linha-valor 0))
   "Retorna a posicao do valor no tabuleiro"
-      (cond ((null tabuleiro) nil)
-            (t (let ((n (length tabuleiro))
-                     (cel (celula i j tabuleiro)))
-                    (cond 
-                      ((>= i n) nil)
-                      ((= j n) (posicao-valor tabuleiro valor (1+ i) 0))
-                      ((< j (length (linha i tabuleiro))) 
-                       (cond ((equal cel valor) (list i j))
-                             (t (posicao-valor tabuleiro valor i (1+ j)))
-                       ))))
-            )
-      )
+  (cond ((null tabuleiro) nil)
+        ((not (null (position valor (car tabuleiro)))) (list linha-valor (position valor (car tabuleiro))))
+        (t (posicao-valor (cdr tabuleiro) valor (1+ linha-valor)))
+  )
 )
 
 ;; Função que recebe o tabuleiro e devolve a posição (i j) em que se encontra o
@@ -373,27 +365,27 @@
   "Função que retorna a lista de sucessores de um nó"
   (cond ((null no) nil)
         ((and (equal algoritmo 'dfs) (>= (no-profundidade no) profundidade-max)) nil)
-        ((and (= (no-profundidade no) 0) (not (cavalo-colocado-p (no-estado no)))) (sucessores-iniciais no (car funcao-sucessores) funcao-heuristica))
-        (t (apply #'append (mapcar (lambda (op) 
+        ((and (= (no-profundidade no) 0) (not (cavalo-colocado-p (no-estado no)))) (sucessores-iniciais no funcao-heuristica))
+        (t (remove-if (lambda (no) (null no)) (mapcar (lambda (op) 
               (let ((sucessor (novo-sucessor no op funcao-heuristica)))
                     (cond ((null sucessor) nil)
-                          (t (list sucessor))
+                          (t sucessor)
                     ))
-              ) (cdr funcao-sucessores)))
+              ) funcao-sucessores))
         )
   )
 )
 
 ;; Função que retorna a lista de sucessores de um nó após a colocação inicial do cavalo
-(defun sucessores-iniciais (no op &optional funcao-heuristica (i 0))
+(defun sucessores-iniciais (no &optional funcao-heuristica (i 0))
   "Função que retorna a lista de sucessores de um nó após a colocação inicial do cavalo"
   (cond ((>= i (length (car (no-estado no)))) nil) 
-        (t (let* ((estado-gerado (funcall op (no-estado no) i))) 
-            (cond ((null estado-gerado) (sucessores-iniciais no op funcao-heuristica (1+ i)))
+        (t (let* ((estado-gerado (colocar-cavalo (no-estado no) i))) 
+            (cond ((null estado-gerado) (sucessores-iniciais no funcao-heuristica (1+ i)))
                   (t (let* ((posicao-destino (posicao-cavalo estado-gerado))
                             (valor-destino (celula (first posicao-destino) (second posicao-destino) (no-estado no)))
                             (pontuacao (+ (no-pontuacao no) valor-destino)))   
-                      (append (list (cria-no estado-gerado (1+ (no-profundidade no)) (cond ((null funcao-heuristica) 0) (t (funcall funcao-heuristica estado-gerado pontuacao))) no)) (sucessores-iniciais no op funcao-heuristica (1+ i)))
+                      (append (list (cria-no estado-gerado (1+ (no-profundidade no)) (cond ((null funcao-heuristica) 0) (t (funcall funcao-heuristica estado-gerado pontuacao))) no)) (sucessores-iniciais no funcao-heuristica (1+ i)))
                      )
                   )
             )
@@ -428,7 +420,7 @@
 ;; Função que retorna a lista de operadores aplicáveis a um estado.
 (defun operadores ()
   "Retorna a lista de movimentos do cavalo"
-  (list 'colocar-cavalo 'operador-1 'operador-2 'operador-3 'operador-4 'operador-5 'operador-6 'operador-7 'operador-8)
+  (list 'operador-1 'operador-2 'operador-3 'operador-4 'operador-5 'operador-6 'operador-7 'operador-8)
 )
 
 ;; Função que movimenta o cavalo 2 casas para baixo e 1 casa para a esquerda.

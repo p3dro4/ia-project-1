@@ -64,7 +64,17 @@
 ;; inserindo-os por ordem crescente de custo
 (defun colocar-sucessores-em-abertos (lista-abertos lista-sucessores)
   "Função que adiciona os nós sucessores à lista de nós abertos, inserindo-os por ordem crescente de custo"
-  (sort (append lista-abertos lista-sucessores) #'compara-custo-nos)
+  ; a utilização de ordenar-nos aumenta o tempo de execução, em contrapartida o sort é uma função destrutiva
+  (cond ((null lista-sucessores) lista-abertos)
+        (t (colocar-sucessores-em-abertos (colocar-no-lista-ordenada lista-abertos (car lista-sucessores)) (cdr lista-sucessores)))
+  )
+)
+
+(defun colocar-no-lista-ordenada (lista-abertos sucessor)
+  (cond ((null lista-abertos) (list sucessor))
+        ((< (no-custo sucessor) (no-custo (car lista-abertos))) (cons sucessor lista-abertos))
+        (t (append (list (car lista-abertos)) (colocar-no-lista-ordenada (cdr lista-abertos) sucessor)))
+  )
 )
 
 ;; Função que recalcula a profundidade dos nós que se encontram em abertos ou fechados
@@ -206,7 +216,6 @@
 )
 
 ;; Algoritmo de procura A*
-; FIXME: Não está a conseguir gerar soluções para certos problemas
 (defun aestrela (no-inicial objetivop funcao-sucessores no-existep funcao-heuristica operadores &optional (nos-expandidos 0) (nos-gerados 0) abertos fechados (tempo-inicial (get-internal-real-time)))
   "Implementação do algoritmo de procura A*. Recebe o nó inicial, o objetivo de pontuação, a função que gera os nós sucessores, a função que verifica se um nó existe, a função que calcula a heurística e os operadores. Retorna uma lista com os nós que compõem o caminho, ou NIL."
   (cond ((null no-inicial) (error "Nó inicial não pode ser nulo"))
@@ -219,9 +228,7 @@
                   ; Lista de nós abertos com os nós sucessores (que não constam na lista de nós abertos e fechados) adicionados
                   (abertos-novo (colocar-sucessores-em-abertos abertos-recalculados sucessores-gerados))
                   ; Lista de nós fechados com as profundidades recalculadas
-                  (fechados-recalculados (recalcular-profundidade sucessores-gerados fechados))
-                  )
-                  ; TODO: Adicionar nós de fechados, que foram recalculados, a abertos
+                  (fechados-recalculados (recalcular-profundidade sucessores-gerados fechados)))
               (let ((nos-expandidos-novo (1+ nos-expandidos))
                     (nos-gerados-novo (+ nos-gerados (length sucessores-gerados))))
                 (cond 
@@ -336,7 +343,7 @@
 )
 
 ;; Função que calcula o factor de ramificação médio
-(defun ramificacao-media (no nos-gerados &optional (erro 0.0001) (intervalo-min 0) (intervalo-max 1000))
+(defun ramificacao-media (no nos-gerados &optional (erro 0.00001) (intervalo-min 0) (intervalo-max 1000))
   "Calcula o factor de ramificação médio"
   (let ((intervalo-medio (/ (+ intervalo-min intervalo-max) 2))
         (comprimento-caminho (no-profundidade no)))
