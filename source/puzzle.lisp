@@ -338,6 +338,24 @@
   )
 )
 
+;; Função que verifica se um nó existe numa lista de nós
+(defun no-existep (no lista algoritmo)
+  "Função que verifica se um nó existe numa lista de nós"
+  (cond
+   ((or (null no) (null lista)) nil)
+   ((or (equal algoritmo 'dfs) (equal algoritmo 'aestrela))
+      (cond ((equal (no-estado no) (no-estado (car lista))) 
+                (cond ((>= (no-custo no) (no-custo (car lista))) t)
+                      (t nil)
+                )
+            )
+            (t (no-existep no (cdr lista) algoritmo))))
+   (t (cond ((equal (no-estado no) (no-estado (car lista))) t)
+            (t (no-existep no (cdr lista) algoritmo)))
+    )
+  )
+)
+
 ;;; Sucessores
 
 ;; Função que retorna o sucessor de um nó com o operador dado como argumento
