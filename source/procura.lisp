@@ -148,7 +148,7 @@
   ; Gera a lista de nós sucessores, gerados pelo nó passado como argumento, através dos operadores
   (cond ((null no-inicial) (error "Nó inicial não pode ser nulo"))
         ; Lista de nós abertos juntamente com os nós fechados
-        (t (let* ((sucessores-gerados (remove-if (lambda (suc) (no-existe suc fechados 'bfs)) (funcall funcao-sucessores no-inicial operadores 'bfs)))
+        (t (let* ((sucessores-gerados (remove-if (lambda (suc) (funcall no-existe suc fechados 'bfs)) (funcall funcao-sucessores no-inicial operadores 'bfs)))
                   ; Gera a lista de nós que são solução
                   (solucao (list (apply #'append (mapcar (lambda (suc) (cond ((funcall objetivop suc) suc))) sucessores-gerados))))
                   ; Gera a lista de nós abertos com os nós sucessores (que não constam na lista de nós abertos) adicionados
