@@ -565,9 +565,20 @@
   )
 )
 
-(defun heuristica-base-melhorada (tabuleiro objetivo pontuacao)
+(defun heuristica-implementada (tabuleiro objetivo pontuacao)
   "Função que representa uma heurística base melhorada"
-
+  (let* ((numeros (numeros-tabuleiro tabuleiro))
+         (numero-de-duplos (length (remove-if (lambda (num) (not (duplop num))) numeros))))
+    (cond ((null numeros) 0)
+          (t (let ((heuristica (/ (- objetivo pontuacao) (media numeros))))
+              (cond ((<= heuristica 0) 0)
+                    ((> numero-de-duplos 0) (* (/ (length numeros) numero-de-duplos) heuristica))
+                    (t heuristica)
+              )
+             )
+          )
+    )
+  )
 )
 
 (defun numeros-redor-cavalo (tabuleiro &optional (i -2) (j -2) numeros)
