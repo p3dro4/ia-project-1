@@ -303,7 +303,7 @@
                   ; Lista de nós abertos com os nós sucessores (que não constam na lista de nós abertos e fechados) adicionados
                   (abertos-novo (colocar-sucessores-em-abertos abertos sucessores-gerados))
                   (no-backup (backup-valores no-inicial sucessores-gerados)))
-              (format t "~a~%" (custo-backup no-backup))
+              (format t "bak > ~3,5f~%" (cond ((null no-backup) 0) (t (no-custo no-backup))))
               (let ((nos-expandidos-novo (1+ nos-expandidos))
                     (nos-gerados-novo (+ nos-gerados (length sucessores-gerados))))
                 (cond 
@@ -322,16 +322,31 @@
   )
 )
 
+(defun rbfs-teste ()
+  (format t "" (rbfs (cria-no (problema-tabuleiro (ler-problema 6))) (cria-objetivo 2000) 'sucessores 'no-existep (lambda (estado pontuacao) (funcall 'heuristica-base estado 2000 pontuacao)) (operadores)))
+)
+
 (defun backup-valores (no-inicial lista-sucessores)
-  (cond ((null lista-sucessores) (cons no-inicial (list (no-custo no-inicial))))
-        (t (let ((menor-custo (no-custo (no-menor-custo lista-sucessores))))
-            (cons no-inicial (list menor-custo)))
-        )
+  (cond ((null lista-sucessores) no-inicial)
+        (t (append no-inicial (list (no-menor-custo lista-sucessores))))
   )
 )
 
 (defun custo-backup (no)
-  (second)
+  (fifth no)
+)
+
+(defun atecessor-comum (no1 no2 &optional )
+  (let* ((no1-lista (no-lista-nos-pais no1))
+         (no2-lista (no-lista-nos-pais no2)))
+         ; TODO: Verificar se existe em ambos
+  )
+)
+
+(defun no-lista-nos-pais (no)
+  (cond ((null no) nil)
+        (t (append (list no) (no-lista-nos-pais (no-pai no))))
+  )
 )
 
 ;;; Medidas de desempenho
