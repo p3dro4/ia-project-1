@@ -34,9 +34,17 @@ As regras de funcionamento adotadas para este problema específico são as segui
 
     ![Imagem da inicialização do programa](images/inicializacao.png)
 
+* Gestão de problemas - Introduzindo '1'
+
+    ![Imagem da gestão de problemas](images/gerir_problemas.png)
+
 * Criação de um problema - Introduzindo '1'
 
     ![Imagem da criação de um problema](images/criar_problema.png)
+
+* Geração de um tabuleiro aleatório - Introduzindo '2'
+
+    ![Imagem da geração de um tabuleiro aleatório](images/gerar_tabuleiro_aleatorio.png)
 
 * Escolha de um problema - Introduzindo '2'
 
@@ -72,11 +80,15 @@ As regras de funcionamento adotadas para este problema específico são as segui
 
   * É necessário chamar a função 'iniciar', para iniciar o programa, fazendo (iniciar);
 
+  * É necessário introduzir um nome e objetivo para um problema criado com um tabuleiro gerado aleatoriamente;
+
   * É necessário introduzir caracteres numéricos para selecionar as opções do menu, por exemplo, '0' para voltar atrás/não e '1' para selecionar a primeira opção/sim;
 
 * Output
 
   * Menu inicial no ecrã, após chamar a função 'iniciar';
+
+  * Tabuleiro aleatório que foi gerado associado ao problema criado, com o objetivo definido;
 
   * Resultados de uma experiência (resolução de um problema com um determinado algoritmo ou com todos os algoritmos) no ecrã, após introduzir a escolha do problema e do algoritmo;
 
