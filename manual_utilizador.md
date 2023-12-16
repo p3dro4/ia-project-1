@@ -100,7 +100,7 @@ As regras de funcionamento adotadas para este problema específico são as segui
 
   * Resultados de uma experiência (resolução de um problema com um determinado algoritmo ou com todos os algoritmos) no ecrã, após introduzir a escolha do problema e do algoritmo;
 
-  * Cada vez que é criado um novo problemas, o mesmo é escrito para um ficheiro problemas.dat
+  * Cada vez que é criado um novo problema, o mesmo é escrito para um ficheiro problemas.dat
 
   * Cada vez que é executada uma experiência, a mesma é escrita para um ficheiro log.dat
 
