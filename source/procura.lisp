@@ -292,63 +292,6 @@
   )
 )
 
-;; Algoritmo de procura RBFS
-(defun rbfs (no-inicial objetivop funcao-sucessores no-existep funcao-heuristica operadores &optional (nos-expandidos 0) (nos-gerados 0) abertos fechados (tempo-inicial (get-internal-real-time)))
-  "Implementação do algoritmo de procura RBFS. Recebe o nó inicial, o objetivo de pontuação, a função que gera os nós sucessores, a função que verifica se um nó existe, a função que calcula a heurística e os operadores. Retorna uma lista com os nós que compõem o caminho, ou NIL."
-  (cond ((null no-inicial) (error "Nó inicial não pode ser nulo"))
-        ; Lista de nós sucessores gerados pelo nó passado como argumento através dos operadores
-        (t (let* ((sucessores-gerados (remove-if (lambda (suc) (funcall no-existep suc (append abertos fechados) 'aestrela)) (funcall funcao-sucessores no-inicial operadores 'aestrela 0 funcao-heuristica)))
-                  ; Lista de nós que são solução
-                  (solucao (list (apply #'append (mapcar (lambda (suc) (cond ((funcall objetivop suc) suc))) sucessores-gerados))))
-                  ; Lista de nós abertos com os nós sucessores (que não constam na lista de nós abertos e fechados) adicionados
-                  (abertos-novo (colocar-sucessores-em-abertos abertos sucessores-gerados))
-                  (no-backup (backup-valores no-inicial sucessores-gerados)))
-              (format t "bak > ~3,5f~%" (cond ((null no-backup) 0) (t (no-custo no-backup))))
-              (let ((nos-expandidos-novo (1+ nos-expandidos))
-                    (nos-gerados-novo (+ nos-gerados (length sucessores-gerados))))
-                (cond 
-                  ; Verifica se o nó inicial é solução, se for retorna-o
-                  ((funcall objetivop no-inicial) (list no-inicial nos-expandidos-novo nos-gerados (penetrancia no-inicial nos-gerados) (ramificacao-media no-inicial nos-gerados) (/ (- (get-internal-real-time) tempo-inicial) internal-time-units-per-second)))
-                  ; Verifica se a lista de nós abertos é nula, se for retorna NIL
-                  ((null abertos-novo) (list nil nos-expandidos-novo nos-gerados-novo 0 0 (/ (- (get-internal-real-time) tempo-inicial) internal-time-units-per-second)))
-                  ; Verifica se a lista de nós solução não é nula, se não for retorna o 1º nó da lista
-                  ((not (null (car solucao))) (list (car solucao) nos-expandidos-novo nos-gerados-novo (penetrancia (car solucao) nos-gerados-novo) (ramificacao-media (car solucao) nos-gerados-novo) (/ (- (get-internal-real-time) tempo-inicial) internal-time-units-per-second)))
-                  ; Aplica recursividade para continuar a procurar
-                  (t (rbfs (car abertos-novo) objetivop funcao-sucessores no-existep funcao-heuristica operadores nos-expandidos-novo nos-gerados-novo (cdr abertos-novo) (append fechados (list no-inicial)) tempo-inicial))
-                )
-              )
-            )
-        )
-  )
-)
-
-(defun rbfs-teste ()
-  (format t "" (rbfs (cria-no (problema-tabuleiro (ler-problema 6))) (cria-objetivo 2000) 'sucessores 'no-existep (lambda (estado pontuacao) (funcall 'heuristica-base estado 2000 pontuacao)) (operadores)))
-)
-
-(defun backup-valores (no-inicial lista-sucessores)
-  (cond ((null lista-sucessores) no-inicial)
-        (t (append no-inicial (list (no-menor-custo lista-sucessores))))
-  )
-)
-
-(defun custo-backup (no)
-  (fifth no)
-)
-
-(defun atecessor-comum (no1 no2 &optional )
-  (let* ((no1-lista (no-lista-nos-pais no1))
-         (no2-lista (no-lista-nos-pais no2)))
-         ; TODO: Verificar se existe em ambos
-  )
-)
-
-(defun no-lista-nos-pais (no)
-  (cond ((null no) nil)
-        (t (append (list no) (no-lista-nos-pais (no-pai no))))
-  )
-)
-
 ;;; Medidas de desempenho
 
 ;; Função que calcula a penetrância do resultado
