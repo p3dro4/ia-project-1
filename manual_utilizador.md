@@ -46,11 +46,19 @@ As regras de funcionamento adotadas para este problema específico são as segui
 
     ![Imagem da geração de um tabuleiro aleatório](images/gerar_tabuleiro_aleatorio.png)
 
+* Listagem de problemas - Introduzindo '2'
+
+    ![Imagem de listagem de problemas](images/listar_problemas.png)
+
+* Backup dos problemas - Introduzindo '3'
+
+    ![Imagem de backup](images/backup.png)
+
 * Escolha de um problema - Introduzindo '2'
 
     ![Imagem da escolha de um problema](images/escolher_problema.png)
 
-* Escolha de um algoritmo para resolver o problema - Introduzindo '1' para utilizar o algoritmo BFS, '2' para utilizar o algoritmo DFS, '3' para utilizar o algoritmo A*, '4' para utilizar o algoritmo RBFS, '5' para utilizar todos ou '0' para voltar atrás
+* Escolha de um algoritmo para resolver o problema - Introduzindo '1' para utilizar o algoritmo BFS, '2' para utilizar o algoritmo DFS, '3' para utilizar o algoritmo A*, '4' para utilizar o algoritmo IDA*, '5' para utilizar todos ou '0' para voltar atrás
 
     ![Imagem da escolha de um algoritmo](images/escolher_algoritmo.png)
 
@@ -91,6 +99,8 @@ As regras de funcionamento adotadas para este problema específico são as segui
   * Tabuleiro aleatório que foi gerado associado ao problema criado, com o objetivo definido;
 
   * Resultados de uma experiência (resolução de um problema com um determinado algoritmo ou com todos os algoritmos) no ecrã, após introduzir a escolha do problema e do algoritmo;
+
+  * Cada vez que é criado um novo problemas, o mesmo é escrito para um ficheiro problemas.dat
 
   * Cada vez que é executada uma experiência, a mesma é escrita para um ficheiro log.dat
 
