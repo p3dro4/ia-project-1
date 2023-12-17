@@ -279,7 +279,8 @@ Devido à limitação mencionada no ponto anterior, alguns algoritmos não conse
     * m(x) é a média por casa dos pontos que constam no tabuleiro x;
     * o(x) é o número de pontos que faltam para atingir o valor definido como objetivo.
 
-* Heurística Implementada - 
+* Heurística Implementada - Priviligia 
+  * Segue a fórmula h(x) = o(x)/(mr(x)/n(x))
 
 #### Algoritmo A*
 
