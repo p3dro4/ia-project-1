@@ -239,13 +239,17 @@
 
 * O programa termina quando encontrar a solução, ou quando a lista de abertos estiver vazia, encontrando ou não a solução.
 
-### 3. Limitações e opções técnicas
+### 3. Limitações
 
-Em termos de limitações, a principal que foi encontrada foi o facto do IDE utilizado, LispWorks, na versão grátis, ter um limite de memória definido para os programas.
+No que diz respeito às limitações, a principal que foi encontrada foi o facto do IDE utilizado, LispWorks, na versão grátis, ter um limite de memória definido para os programas.
+
+A outra limitação foi o facto de não ter sido possível implementar uma segunda heurística, suficientemente boa para resolver o problema E.
 
 ### 4. Análise critica dos resultados das execuções do programa, transparecendo a compreensão das limitações do projeto
 
-Devido à limitação mencionada no ponto anterior, alguns algoritmos não conseguem encontrar solução para determinados problemas, devido a gerarem demasiados nós, ultrapassando o limite de memória disponível e dando "crash" ao programa.
+Devido às limitações mencionadas no ponto anterior, os algoritmos BFS e DFS não conseguem encontrar solução para os problemas E e F. Pelos mesmos motivos, ambos os algoritmos A* e IDA* não conseguem encontrar solução para o problema E, devido às heurísticas utilizadas não serem boas o suficiente.
+
+Estas duas situações devem-se ao facto dos algoritmos gerarem demasiados nós, ultrapassando o limite de memória disponível e dando "crash" ao programa.
 
 ### 5. Análise comparativa do conjunto de execuções do programa para cada algoritmo e cada problema, permitindo verificar o desempenho de cada algoritmo e das heurísticas
 
@@ -279,8 +283,11 @@ Devido à limitação mencionada no ponto anterior, alguns algoritmos não conse
     * m(x) é a média por casa dos pontos que constam no tabuleiro x;
     * o(x) é o número de pontos que faltam para atingir o valor definido como objetivo.
 
-* Heurística Implementada - Priviligia 
-  * Segue a fórmula h(x) = o(x)/(mr(x)/n(x))
+* Heurística Implementada - Privilegia visitar as casas com o maior número de pontos, excluindo as casas que se encontram ao redor do cavalo.
+  * Segue a fórmula h(x) = o(x)/(msr(x)/n(x))
+    * x é o tabuleiro;
+    * msr(x) é a média por casa dos pontos que constam no tabuleiro x, excluindo as casas que se encontram ao redor do cavalo;
+    * n(x) é o número de jogadas que o cavalo pode fazer no tabuleiro x.
 
 #### Algoritmo A*
 
@@ -299,12 +306,12 @@ Devido à limitação mencionada no ponto anterior, alguns algoritmos não conse
 
 | | Encontrou solução? (Sim/Não e porquê) | Nós expandidos | Nós gerados | Penetrância | Fator de Ramificação Média | Tempo de Execução |
 | :--------: | :-: | :-: | :-: | :-: | :-: | :-: |
-| Problema A |  |  |  |  |  |  |
-| Problema B |  |  |  |  |  |  |
-| Problema C |  |  |  |  |  |  |
-| Problema D |  |  |  |  |  |  |
-| Problema E |  |  |  |  |  |  |
-| Problema F |  |  |  |  |  |  |
+| Problema A | Sim | 5 | 7 | 0.429 (42.9%) | 1.488 (148.8%) | 0.009000 seg. |
+| Problema B | Sim | 17 | 21 | 0.381 (38.1%) | 1.213 (121.3%) | 0.026000 seg. |
+| Problema C | Sim | 18 | 22 | 0.273 (27.3%) | 1.388 (138.8%) | 0.029000 seg. |
+| Problema D | Sim | 64 | 76 | 0.171 (17.1%) | 1.234 (123.4%) | 0.154000 seg. |
+| Problema E | Não, uma vez que gera demasiados nós, ultrapassando o limite de memória disponível. Devido ao problema ter poucos pontos, requer um caminho muito específico, que apenas é atingível com uma heurística boa | - | - | - | - | - |
+| Problema F | Sim | 70 | 172 | 0.233 (23.3%) | 1.062 (106.2%) | 1.092000 seg. |
 
 #### Algoritmo IDA*
 
@@ -323,12 +330,12 @@ Devido à limitação mencionada no ponto anterior, alguns algoritmos não conse
 
 | | Encontrou solução? (Sim/Não e porquê) | Nós expandidos | Nós gerados | Penetrância | Fator de Ramificação Média | Tempo de Execução |
 | :--------: | :-: | :-: | :-: | :-: | :-: | :-: |
-| Problema A |  |  |  |  |  |  |
-| Problema B |  |  |  |  |  |  |
-| Problema C |  |  |  |  |  |  |
-| Problema D |  |  |  |  |  |  |
-| Problema E |  |  |  |  |  |  |
-| Problema F |  |  |  |  |  |  |
+| Problema A | Sim | 7 | 10 | 0.300 (30.0%) | 1.737 (173.7%) | 0.010000 seg. |
+| Problema B | Sim | 18 | 26 | 0.385 (38.5%) | 1.169 (116.9%) | 0.029000 seg. |
+| Problema C | Sim | 9 | 21 | 0.286 (28.6%) | 1.373 (137.3%) | 0.023000 seg. |
+| Problema D | Sim | 37 | 56 | 0.232 (23.2%) | 1.195 (119.5%) | 0.088000 seg. |
+| Problema E | Não, uma vez que gera demasiados nós, ultrapassando o limite de memória disponível. Devido ao problema ter poucos pontos, requer um caminho muito específico, que apenas é atingível com uma heurística boa | - | - | - | - | - |
+| Problema F | Sim | 40 | 130 | 0.292 (29.2%) | 1.056 (105.6%) | 0.594000 seg. |
 
 ### 6. Lista dos requisitos do projeto (listados no enunciado) que não foram implementados
 
