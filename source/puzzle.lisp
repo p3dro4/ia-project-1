@@ -567,12 +567,16 @@
   )
 )
 
+;; Função que representa uma heurística implementada
 (defun heuristica-implementada (tabuleiro objetivo pontuacao)
-  "Função que representa uma heurística base melhorada"
+  "Função que representa uma heurística implementada"
   (let* ((numeros (numeros-tabuleiro tabuleiro))
-         (numero-de-duplos (length (remove-if (lambda (num) (not (duplop num))) numeros))))
+         (numero-de-duplos (length (remove-if (lambda (num) (not (duplop num))) numeros)))
+         (numeros-redor (numeros-redor-cavalo tabuleiro))
+         (numero-jogadas (numero-jogadas-possiveis tabuleiro)))
     (cond ((null numeros) 0)
-          (t (let ((heuristica (/ (- objetivo pontuacao) (media numeros))))
+          (t (let* ((media-redor (/ (media numeros-redor) (cond ((= numero-jogadas 0) 1) (t numero-jogadas))))
+                    (heuristica (/ (- objetivo pontuacao) (cond ((= media-redor 0) 1) (t media-redor)))))
               (cond ((<= heuristica 0) 0)
                     ((> numero-de-duplos 0) (* (/ (length numeros) numero-de-duplos) heuristica))
                     (t heuristica)
@@ -595,6 +599,20 @@
                       )
                     )
                  )
+            )
+        )
+  )
+)
+
+(defun numero-jogadas-possiveis (tabuleiro &optional (i -2) (j -2) (numero-jogadas 0))
+  "Função que retorna o número de jogadas possíveis"
+  (cond ((null tabuleiro) numero-jogadas)
+        (t (cond ((not (cavalo-colocado-p tabuleiro)) numero-jogadas)
+                 ((> i 2) numero-jogadas)
+                 ((> j 2) (numero-jogadas-possiveis tabuleiro (1+ i) -2 numero-jogadas))
+                 ((and (= (abs i) 2) (= (abs j) 1)) (numero-jogadas-possiveis tabuleiro i (1+ j) (cond ((validop (list (+ (first (posicao-cavalo tabuleiro)) i) (+ (second (posicao-cavalo tabuleiro)) j)) tabuleiro) (1+ numero-jogadas)) (t numero-jogadas))))
+                 ((and (= (abs i) 1) (= (abs j) 2)) (numero-jogadas-possiveis tabuleiro i (1+ j) (cond ((validop (list (+ (first (posicao-cavalo tabuleiro)) i) (+ (second (posicao-cavalo tabuleiro)) j)) tabuleiro) (1+ numero-jogadas)) (t numero-jogadas))))
+                 (t (numero-jogadas-possiveis tabuleiro i (1+ j) numero-jogadas))
             )
         )
   )

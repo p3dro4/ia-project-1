@@ -324,7 +324,9 @@
 ;; Função auxiliar que retorna a média dos valores fornecidos
 (defun media (lista)
   "Função que retorna a média dos valores fornecidos"
-  (/ (apply #'+ lista) (length lista))
+  (cond ((null lista) 0)
+        (t (/ (apply #'+ lista) (length lista)))
+  )
 )
 
 ;; Função que representa o calculo do factor de ramificação médio através de um polinómio
