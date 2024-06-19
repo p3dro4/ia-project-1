@@ -1,7 +1,7 @@
 <br/>
 <p align="center">
   <a href="https://github.com/p3dro4/projeto-1-ia">
-    <img src="https://i.imgur.com/KyY6wSG.png" alt="Logo" width="48" height="48">
+    <img src="https://i.imgur.com/KyY6wSG.png" alt="Logo" width="80" height="80">
   </a>
   <h3 align="center">IA Project 1</h3>
 </p>
