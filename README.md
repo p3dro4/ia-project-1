@@ -3,7 +3,7 @@
   <a href="https://github.com/p3dro4/projeto-1-ia">
     <img src="https://i.imgur.com/KyY6wSG.png" alt="Logo" width="80" height="80">
   </a>
-  <h3 align="center">IA Project 1</h3>
+  <h3 align="center">IA Project - Part 1</h3>
 </p>
 
 ![Contributors](https://img.shields.io/github/contributors/p3dro4/ia-project-1?color=dark-green)
@@ -11,6 +11,7 @@
 ## Table of Contents
 
 * [About the Project](#about-the-project)
+* [Related Projects](#related-projects)
 * [Tech Stack](#tech-stack)
 * [Authors](#authors)
 
@@ -24,6 +25,10 @@ The algorithm used to solve the problem are the following:
 * Depth-first search (DFS);
 * A* search algorithm;
 * Iterative deepening A* (IDA*) search algorithm.
+
+## Related Projects
+
+* [IA Project - Part 2](https://github.com/p3dro4/ia-project-2)
 
 ## Tech Stack
 
