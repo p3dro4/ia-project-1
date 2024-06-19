@@ -1,6 +1,6 @@
 <br/>
 <p align="center">
-  <a href="https://github.com/p3dro4/projeto-1-ia">
+  <a href="https://github.com/p3dro4/ia-project-1">
     <img src="https://i.imgur.com/KyY6wSG.png" alt="Logo" width="80" height="80">
   </a>
   <h3 align="center">IA Project - Part 1</h3>
