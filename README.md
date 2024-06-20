@@ -1,12 +1,12 @@
 <br/>
 <p align="center">
-  <a href="https://github.com/p3dro4/ia-project-1">
+  <a href="https://github.com/p3dro4/ai-project-1">
     <img src="https://i.imgur.com/KyY6wSG.png" alt="Logo" width="80" height="80">
   </a>
-  <h3 align="center">IA Project - Part 1</h3>
+  <h3 align="center">AI Project - Part 1</h3>
 </p>
 
-![Contributors](https://img.shields.io/github/contributors/p3dro4/ia-project-1?color=dark-green)
+![Contributors](https://img.shields.io/github/contributors/p3dro4/ai-project-1?color=dark-green)
 
 ## Table of Contents
 
@@ -28,7 +28,7 @@ The algorithm used to solve the problem are the following:
 
 ## Related Projects
 
-* [IA Project - Part 2](https://github.com/p3dro4/ia-project-2)
+* [AI Project - Part 2](https://github.com/p3dro4/ai-project-2)
 
 ## Tech Stack
 
